@@ -10,7 +10,7 @@ import launch_ros.descriptions
 
 
 def generate_launch_description():
-    depthai_examples_path = get_package_share_directory('my_depthai_ros2')
+    depthai_examples_path = get_package_share_directory('my_depthai')
 
     default_resources_path = os.path.join(depthai_examples_path,
                                 'resources')
@@ -33,7 +33,7 @@ def generate_launch_description():
     
   
     publisch_tf_node = launch_ros.actions.Node(
-            package='my_depthai_ros2', executable='publisch_tf.py',
+            package='my_depthai', executable='publisch_tf.py',
             output='screen',
             parameters=[{'nnConfig': nnConfig},
                         {'resourceBaseFolder': resourceBaseFolder}])

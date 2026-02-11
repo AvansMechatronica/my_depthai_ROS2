@@ -10,10 +10,10 @@ import launch_ros.descriptions
 
 
 def generate_launch_description():
-    depthai_examples_path = get_package_share_directory('my_depthai_ros2')
+    depthai_examples_path = get_package_share_directory('my_depthai')
 
 
-    default_rviz = os.path.join(get_package_share_directory('my_depthai_ros2'),
+    default_rviz = os.path.join(get_package_share_directory('my_depthai'),
                                 'rviz', 'spatialDetections.rviz')
     
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
@@ -35,7 +35,7 @@ def generate_launch_description():
     cam_pitch = LaunchConfiguration('cam_pitch',     default = '0.0')
     cam_yaw   = LaunchConfiguration('cam_yaw',       default = '0.0')
 
-    camera_param_uri   = LaunchConfiguration('camera_param_uri',  default = 'package://my_depthai_ros2/params/camera')
+    camera_param_uri   = LaunchConfiguration('camera_param_uri',  default = 'package://my_depthai/params/camera')
     sync_nn            = LaunchConfiguration('sync_nn',           default = True)
     subpixel           = LaunchConfiguration('subpixel',          default = True)
 
@@ -169,7 +169,7 @@ def generate_launch_description():
                                               'cam_yaw'     : cam_yaw}.items())
     
     yolo_spatial_detector_node = launch_ros.actions.Node(
-            package='my_depthai_ros2', executable='yolo_spatial_detector_node',
+            package='my_depthai', executable='yolo_spatial_detector_node',
             output='screen',
             parameters=[{'tf_prefix': tf_prefix},
                         {'camera_param_uri': camera_param_uri},

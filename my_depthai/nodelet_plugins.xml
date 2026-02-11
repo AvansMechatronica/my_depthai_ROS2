@@ -1,5 +1,5 @@
 <library path="lib/libnodelet_stereo">
-  <class name="my_depthai_ros2/StereoNodelet" type="depthai_examples::StereoNodelet" base_class_type="nodelet::Nodelet">
+  <class name="my_depthai/StereoNodelet" type="depthai_examples::StereoNodelet" base_class_type="nodelet::Nodelet">
   <description>
   This is stereo publishing nodelet.
   </description>

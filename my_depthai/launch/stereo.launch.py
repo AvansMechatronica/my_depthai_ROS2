@@ -10,7 +10,7 @@ import launch_ros.descriptions
 
 
 def generate_launch_description():
-    default_rviz = os.path.join(get_package_share_directory('my_depthai_ros2'),
+    default_rviz = os.path.join(get_package_share_directory('my_depthai'),
                                 'rviz', 'stereoPointCloud.rviz')
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
     
@@ -136,7 +136,7 @@ def generate_launch_description():
                                               'cam_yaw'     : cam_yaw}.items())
 
     stereo_node = launch_ros.actions.Node(
-            package='my_depthai_ros2', executable='stereo_node',
+            package='my_depthai', executable='stereo_node',
             output='screen',
             parameters=[{'tf_prefix': tf_prefix},
                         {'mode': mode},

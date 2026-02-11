@@ -5,10 +5,33 @@ Hier wordt beschreven hoe je de template kan verkrijgen, kunt bouwen en tenslott
 ## Development computer
 Als in dit document gesproken wordt over een development-computer dan wordt hiermee bedoeld de laptop/computer waarop je de software in ROS2 ontwikkelt.
 
-## Cloning de ROS2 Universal Robots template
+## Voorbereidingen
+### Installatie van de algemene DepthAI ROS Packages
+
+```bash
+sudo apt install ros-$ROS_DISTRO-depthai-ros
+```
+
+[DepthAI ROS Pagina](https://docs.luxonis.com/software-v3/depthai/ros/)
+
+### Installeer udev rules voor de camera
+```bash
+wget -qO- https://docs.luxonis.com/install_dependencies/ | bash
+```
+
+of (nog even uitzoeken)
+
+
+```bash
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/udev/rules.d/80-movidius.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+## Cloning de ROS2 DepthAI template
 Voor het maken van de Depthai ROS2 template maak je gebruik van een Github repository. Je kunt er voor kiezen om deze clone onder een eigen account van Github te plaatsen (1e keuze hieronder). Je kunt daarna eenvoudig backup's van je werk maken naar je eigen Github account.
 
-> we maken gebruik van een prefix my_ur in de packages van de repository om onderscheid te maken met de standaard Universal Robots packages.
+> we maken gebruik van een prefix my_ur in de packages van de repository om onderscheid te maken met de standaard DepthAIs packages.
 
 :::::{card} 
 
@@ -55,7 +78,7 @@ git clone https://github.com/AvansMechatronica/my_depthai_ROS2.git
 
 
 
-## Installatie van Universal Robot support packages
+## Installatie van DepthAI support packages
 Met onderstaand commando worden alle benodigde software voor de template geinstalleerd en de workspace gebouwd met colcon.
 
 ```bash

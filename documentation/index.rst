@@ -18,6 +18,9 @@ Welkom bij de DepthAI Template Repository
 
    documentation/overview.md
    documentation/install.md
+   documentation/camera.md
+   documentation/app.md
+   documentation/ai_netwerk.md
    documentation/troubleshooting.md
    documentation/faq.md
 
