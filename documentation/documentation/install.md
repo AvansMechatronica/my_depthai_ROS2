@@ -1,4 +1,4 @@
-# Installatie van de UR-template
+# Installatie van de DepthAI-template
 
 Hier wordt beschreven hoe je de template kan verkrijgen, kunt bouwen en tenslotte kunt testen.
 
@@ -6,7 +6,7 @@ Hier wordt beschreven hoe je de template kan verkrijgen, kunt bouwen en tenslott
 Als in dit document gesproken wordt over een development-computer dan wordt hiermee bedoeld de laptop/computer waarop je de software in ROS2 ontwikkelt.
 
 ## Cloning de ROS2 Universal Robots template
-Voor het maken van de ROS2 Universal Robots template maak je gebruik van een Github repository. Je kunt er voor kiezen om deze clone onder een eigen account van Github te plaatsen (1e keuze hieronder). Je kunt daarna eenvoudig backup's van je werk maken naar je eigen Github account.
+Voor het maken van de Depthai ROS2 template maak je gebruik van een Github repository. Je kunt er voor kiezen om deze clone onder een eigen account van Github te plaatsen (1e keuze hieronder). Je kunt daarna eenvoudig backup's van je werk maken naar je eigen Github account.
 
 > we maken gebruik van een prefix my_ur in de packages van de repository om onderscheid te maken met de standaard Universal Robots packages.
 
@@ -18,7 +18,7 @@ Voor het maken van de ROS2 Universal Robots template maak je gebruik van een Git
 
 * Maak een account aan bij [Github](https://github.com/) en login op dit account
 
-* Open de [my_ur_ROS2](https://github.com/AvansMechatronica/my_ur_ROS2) repository
+* Open de [my_depthai_ROS2](https://github.com/AvansMechatronica/my_depthai_ROS2) repository
 
 * Maak een Fork van de repository naar je eigen Github account door op het **Fork icoon**  te klikken:
 
@@ -29,9 +29,9 @@ Voor het maken van de ROS2 Universal Robots template maak je gebruik van een Git
 * Nu kun je de workspace als volgt creëren
 
 ```bash
-mkdir -p ~/my_ur_ws/src
-cd ~/my_ur_ws/src
-git clone https://github.com/<jouw_account_naam>/my_ur_ROS2.git
+mkdir -p ~/my_depthai_ws/src
+cd ~/my_depthai_ws/src
+git clone https://github.com/<jouw_account_naam>/my_depthai_ROS2.git
 ```
 
 *ps. Het gebruik van github (zoals add, commit & push commando's) valt  buiten de scope van deze documentatie*
@@ -42,9 +42,9 @@ git clone https://github.com/<jouw_account_naam>/my_ur_ROS2.git
 
 * Je kunt de workspace als volgt creëren
 ```bash
-mkdir -p ~/my_ur_ws/src
-cd ~/my_ur_ws/src
-git clone https://github.com/AvansMechatronica/my_ur_ROS2.git
+mkdir -p ~/my_depthai_ws/src
+cd ~/my_depthai_ws/src
+git clone https://github.com/AvansMechatronica/my_depthai_ROS2.git
 ```
 
 :::
@@ -59,7 +59,14 @@ git clone https://github.com/AvansMechatronica/my_ur_ROS2.git
 Met onderstaand commando worden alle benodigde software voor de template geinstalleerd en de workspace gebouwd met colcon.
 
 ```bash
-cd ~/my_ur_ws/src/my_ur_ROS2/install
+cd ~/my_depthai_ws/src/my_depthai_ROS2
+rosdep update
+rosdep install --ignore-src --from-paths src -y
+```
+
+
+```bash
+cd ~/my_depthai_ws/src/my_depthai_ROS2/install
 ./install
 ```
 
@@ -67,7 +74,7 @@ cd ~/my_ur_ws/src/my_ur_ROS2/install
 > Dit is al gebeurd in de installatie. Wijzig je iets in de workspace dan kun je als volgt bouwen.
 ```bash
 # Build the workspace
-cd ~/my_ur_ws
+cd ~/my_depthai_ws
 colcon build --symlink-install
 source install/setup.bash
 ```
@@ -76,7 +83,7 @@ Heb je slechts 1 package gewijzigd dan kun je onderstaand commando gebruiken om 
 
 ```bash
 # Build one of the packages in the workspace
-cd ~/my_ur_ws
+cd ~/my_depthai_ws
 colcon build --symlink-install --packages-select <package_name>
 source install/setup.bash
 ```

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>my_depthai_ros2</name>
+  <name>my_depthai</name>
   <version>2.8.1</version>
-  <description>The my_depthai_ros2 package</description>
+  <description>The my_depthai package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

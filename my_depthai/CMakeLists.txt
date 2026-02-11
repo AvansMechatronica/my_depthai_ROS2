@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)  # CMake version in Ubuntu 18.04 LTS
-project(my_depthai_ros2 VERSION 2.8.1 LANGUAGES CXX C)
+project(my_depthai VERSION 2.8.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
