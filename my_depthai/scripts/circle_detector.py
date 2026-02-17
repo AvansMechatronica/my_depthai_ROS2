@@ -9,7 +9,8 @@ import numpy as np
 
 from visualization_msgs.msg import Marker
 
-import ros2_numpy
+
+from sensor_msgs_py import point_cloud2
 
 import cv2
 from cv_bridge import CvBridge
@@ -73,7 +74,11 @@ class CircleDetector(Node):
         #rospy.loginfo("PCL Callback")
 
         #pc_list = ros2_numpy.point_cloud2.pointcloud2_to_xyz_array(point_cloud_msg, remove_nans = False )
-        pc_list = ros2_numpy.point_cloud2.point_cloud2_to_array(point_cloud_msg)
+        pc_array = point_cloud2.read_points_numpy(
+            point_cloud_msg,
+            field_names=("x", "y", "z"),
+            skip_nans=False
+        )
 
         #print(pc_list)
 
@@ -98,14 +103,15 @@ class CircleDetector(Node):
                 if((y1 >= point_cloud_msg.height) or (y2 >= point_cloud_msg.height)):
                     continue
                       
-                xyz_data = pc_list["xyz"]
-                curr_pos = xyz_data[point_cloud_msg.width * y + x]
-                #curr_pos = xyz_data[point_cloud_msg.height * x + y]
-                if curr_pos[0] is not None:
-                    #if(curr_pos[2] < min_z):
-                    min_x = curr_pos[0]
-                    min_y = curr_pos[1]
-                    min_z = curr_pos[2]
+                idx = point_cloud_msg.width * y + x
+                if idx >= pc_array.shape[0]:
+                    continue
+
+                curr_pos = pc_array[idx]
+                if np.any(np.isnan(curr_pos)):
+                    continue
+
+                min_x, min_y, min_z = float(curr_pos[0]), float(curr_pos[1]), float(curr_pos[2])
 
                 if np.isnan(min_x) or np.isnan(min_y) or np.isnan(min_z):
                     continue
