@@ -19,9 +19,9 @@ ros2 launch my_depthai stereo_circle_detector.launch.py
 
 
 ### Configuratie neuraal netwerk
-Om een eigen netwerk te gebruiken plaats je het blob en json bestand van je netwerk in de `resources` map van de `my_depthai` package en configureert het `stereo_circle_detector.launch.py` in de `launch` map van de `my_depthai` package op de volgende regels:
+Om een eigen netwerk te gebruiken plaats je het blob en json bestand van je netwerk in de `resources` map van de `my_depthai` package en configureert het `yolo_spatial_detector_node.launch.py` in de `launch` map van de `my_depthai` package op de volgende regels:
 
 ```python
-nnName              = LaunchConfiguration('nnName', default = "SimpleFruitsv1iyolov5pytorch_openvino_2021.4_6shave.blob")
-nnConfig             = LaunchConfiguration('nnConfig', default = "SimpleFruitsv1iyolov5pytorch.json")
+nnName = LaunchConfiguration('nnName', default = "SimpleFruitsYoloV8.blob")
+nnConfig = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV8.json")
 ```
