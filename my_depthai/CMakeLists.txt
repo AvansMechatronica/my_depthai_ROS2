@@ -116,6 +116,8 @@ install(TARGETS
 
 install(PROGRAMS
         scripts/publisch_bouding_boxes.py
+        scripts/publisch_bouding_boxes_rvc2.py
+  scripts/publisch_tf_rvc2.py
         scripts/publisch_tf.py
         scripts/circle_detector.py
         scripts/workspace_from_markers.py

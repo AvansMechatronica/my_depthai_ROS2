@@ -39,8 +39,10 @@ def generate_launch_description():
     sync_nn            = LaunchConfiguration('sync_nn',           default = True)
     subpixel           = LaunchConfiguration('subpixel',          default = True)
 
-    nnName              = LaunchConfiguration('nnName', default = "SimpleFruitsv1iyolov5pytorch_openvino_2021.4_6shave.blob")
-    nnConfig             = LaunchConfiguration('nnConfig', default = "SimpleFruitsv1iyolov5pytorch.json")
+    #nnName              = LaunchConfiguration('nnName', default = "SimpleFruitsYoloV5.blob")
+    #nnConfig             = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV5.json")
+    nnName              = LaunchConfiguration('nnName', default = "SimpleFruitsYoloV8.blob")
+    nnConfig             = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV8.json")
     resourceBaseFolder  = LaunchConfiguration('resourceBaseFolder', default = default_resources_path)
     confidence          = LaunchConfiguration('confidence',        default = 200)
     lrcheck             = LaunchConfiguration('lrcheck', default = True)

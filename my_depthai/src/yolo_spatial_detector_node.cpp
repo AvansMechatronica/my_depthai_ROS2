@@ -26,7 +26,7 @@
 
 #include "jsoncpp/json/json.h"
 
-std::tuple<dai::Pipeline, int, int> createPipeline(bool lrcheck, 
+std::tuple<dai::Pipeline, int, int, int, int> createPipeline(bool lrcheck, 
                                                    bool extended, 
                                                    bool syncNN, 
                                                    bool subpixel, 
@@ -102,15 +102,14 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool lrcheck,
     monoRightCam->setBoardSocket(dai::CameraBoardSocket::CAM_C);
 
 
-    //int rgbScaleNumerator = 2;
-    //int rgbScaleDinominator = 3;
-    //colorCam->setIspScale(rgbScaleNumerator, rgbScaleDinominator);
-    //colorCam->setPreviewSize(width, height);
-
-    colorCam->setPreviewSize(416, 416);
-    colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
-    colorCam->setInterleaved(false);
-    colorCam->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
+    int nnInputWidth = 416;
+    int nnInputHeight = 416;
+    int numClasses = 0;
+    int coordinateSize = 4;
+    float confThreshold = 0.5f;
+    float iouThreshold = 0.5f;
+    std::vector<float> anchors;
+    std::map<std::string, std::vector<int>> anchorMasks;
 
     // StereoDepth
     stereoDepth->initialConfig.setConfidenceThreshold(confidence);
@@ -124,57 +123,100 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool lrcheck,
 
     {
         std::ifstream file(nnConfigPath);
-        // json reader
         Json::Reader reader;
-        // this will contain complete JSON data
         Json::Value completeJsonData;
-        // reader reads the data and stores it in completeJsonData
-        reader.parse(file, completeJsonData);
-        //std::cout << completeJsonData << std::endl;
-        //std::cout << completeJsonData["nn_config"]["NN_specific_metadata"]["confidence_threshold"].asString() << std::endl;
-
-        spatialDetectionNetwork->setBlobPath(nnPath);
-        spatialDetectionNetwork->setConfidenceThreshold(0.5f);//confidenceThreshold);//std::stof(completeJsonData["nn_config"]["NN_specific_metadata"]["confidence_threshold"].asString()));
-        spatialDetectionNetwork->input.setBlocking(false);
-        spatialDetectionNetwork->setBoundingBoxScaleFactor(0.5);
-        spatialDetectionNetwork->setDepthLowerThreshold(100);
-        spatialDetectionNetwork->setDepthUpperThreshold(5000);
-
-        // yolo specific parameters
-        spatialDetectionNetwork->setNumClasses(std::stoi(completeJsonData["nn_config"]["NN_specific_metadata"]["classes"].asString()));
-        spatialDetectionNetwork->setCoordinateSize(std::stoi(completeJsonData["nn_config"]["NN_specific_metadata"]["coordinates"].asString()));
-
-
-        /* extract anchors */
-        std::vector<float> anchors;
-        Json::Value anchors_json = completeJsonData["nn_config"]["NN_specific_metadata"]["anchors"];
-
-        for(int i = 0; i < anchors_json.size(); i++){
-            anchors.push_back(std::stof(anchors_json[i].asString()));
+        if(!reader.parse(file, completeJsonData)) {
+            throw std::runtime_error("Unable to parse nnConfig JSON: " + nnConfigPath);
         }
-        spatialDetectionNetwork->setAnchors(anchors);
 
-        /* extract anchor masks */
-        std::map<std::string, std::vector<int>> anchorMasks;
-        Json::Value anchors_mask_json = completeJsonData["nn_config"]["NN_specific_metadata"]["anchor_masks"];
-
-        for (auto const& id : anchors_mask_json.getMemberNames()) {
-            Json::Value anchors_mask_members_json = anchors_mask_json[id];
-            std::vector<int> mask_values;
-            for(int i = 0; i < anchors_mask_members_json.size(); i++){
-                mask_values.push_back(std::stoi(anchors_mask_members_json[i].asString()));
+        if(completeJsonData.isMember("nn_config")) {
+            const auto& nnConfigJson = completeJsonData["nn_config"];
+            if(nnConfigJson.isMember("input_size")) {
+                auto inputSize = nnConfigJson["input_size"].asString();
+                auto delimPos = inputSize.find('x');
+                if(delimPos != std::string::npos) {
+                    nnInputWidth = std::stoi(inputSize.substr(0, delimPos));
+                    nnInputHeight = std::stoi(inputSize.substr(delimPos + 1));
+                }
             }
 
-            anchorMasks[id] = mask_values;
-            mask_values.clear();
+            const auto& metadata = nnConfigJson["NN_specific_metadata"];
+            if(metadata.isMember("classes")) {
+                if(metadata["classes"].isString()) numClasses = std::stoi(metadata["classes"].asString());
+                else numClasses = metadata["classes"].asInt();
+            }
+            if(metadata.isMember("coordinates")) {
+                if(metadata["coordinates"].isString()) coordinateSize = std::stoi(metadata["coordinates"].asString());
+                else coordinateSize = metadata["coordinates"].asInt();
+            }
+            if(metadata.isMember("confidence_threshold")) confThreshold = metadata["confidence_threshold"].asFloat();
+            if(metadata.isMember("iou_threshold")) iouThreshold = metadata["iou_threshold"].asFloat();
+
+            Json::Value anchorsJson = metadata["anchors"];
+            for(int i = 0; i < anchorsJson.size(); i++) {
+                if(anchorsJson[i].isString()) anchors.push_back(std::stof(anchorsJson[i].asString()));
+                else anchors.push_back(anchorsJson[i].asFloat());
+            }
+
+            Json::Value masksJson = metadata["anchor_masks"];
+            for(const auto& id : masksJson.getMemberNames()) {
+                Json::Value maskMembersJson = masksJson[id];
+                std::vector<int> maskValues;
+                for(int i = 0; i < maskMembersJson.size(); i++) {
+                    if(maskMembersJson[i].isString()) maskValues.push_back(std::stoi(maskMembersJson[i].asString()));
+                    else maskValues.push_back(maskMembersJson[i].asInt());
+                }
+                anchorMasks[id] = maskValues;
+            }
+        } else if(completeJsonData.isMember("model")) {
+            const auto& modelJson = completeJsonData["model"];
+            if(modelJson.isMember("inputs") && modelJson["inputs"].size() > 0) {
+                const auto& shape = modelJson["inputs"][0]["shape"];
+                if(shape.size() >= 4) {
+                    nnInputHeight = shape[2].asInt();
+                    nnInputWidth = shape[3].asInt();
+                }
+            }
+
+            if(modelJson.isMember("heads") && modelJson["heads"].size() > 0) {
+                const auto& metadata = modelJson["heads"][0]["metadata"];
+                if(metadata.isMember("n_classes")) numClasses = metadata["n_classes"].asInt();
+                if(metadata.isMember("conf_threshold")) confThreshold = metadata["conf_threshold"].asFloat();
+                if(metadata.isMember("iou_threshold")) iouThreshold = metadata["iou_threshold"].asFloat();
+
+                if(metadata.isMember("anchors") && metadata["anchors"].isArray()) {
+                    for(int i = 0; i < metadata["anchors"].size(); i++) {
+                        anchors.push_back(metadata["anchors"][i].asFloat());
+                    }
+                }
+            }
+        } else {
+            throw std::runtime_error("Unsupported nnConfig JSON schema: " + nnConfigPath);
         }
-        spatialDetectionNetwork->setAnchorMasks(anchorMasks);
 
-        spatialDetectionNetwork->setIouThreshold(std::stof(completeJsonData["nn_config"]["NN_specific_metadata"]["iou_threshold"].asString()));
-
-
-        spatialDetectionNetwork->setSpatialCalculationAlgorithm(dai::SpatialLocationCalculatorAlgorithm::MIN);
+        if(numClasses <= 0) {
+            throw std::runtime_error("Invalid class count in nnConfig: " + nnConfigPath);
+        }
     }
+
+    colorCam->setPreviewSize(nnInputWidth, nnInputHeight);
+    colorCam->setResolution(dai::ColorCameraProperties::SensorResolution::THE_1080_P);
+    colorCam->setInterleaved(false);
+    colorCam->setColorOrder(dai::ColorCameraProperties::ColorOrder::BGR);
+
+    spatialDetectionNetwork->setBlobPath(nnPath);
+    spatialDetectionNetwork->setConfidenceThreshold(confThreshold);
+    spatialDetectionNetwork->input.setBlocking(false);
+    spatialDetectionNetwork->setBoundingBoxScaleFactor(0.5);
+    spatialDetectionNetwork->setDepthLowerThreshold(100);
+    spatialDetectionNetwork->setDepthUpperThreshold(5000);
+
+    spatialDetectionNetwork->setNumClasses(numClasses);
+    spatialDetectionNetwork->setCoordinateSize(coordinateSize);
+    if(!anchors.empty()) spatialDetectionNetwork->setAnchors(anchors);
+    if(!anchorMasks.empty()) spatialDetectionNetwork->setAnchorMasks(anchorMasks);
+    spatialDetectionNetwork->setIouThreshold(iouThreshold);
+    spatialDetectionNetwork->setSpatialCalculationAlgorithm(dai::SpatialLocationCalculatorAlgorithm::MIN);
 
 
     // Link plugins CAM -> STEREO -> XLINK
@@ -209,7 +251,7 @@ std::tuple<dai::Pipeline, int, int> createPipeline(bool lrcheck,
     if(publish_depth_image){
         spatialDetectionNetwork->passthroughDepth.link(xoutDepth->input);
     }
-    return std::make_tuple(pipeline, width, height);
+    return std::make_tuple(pipeline, width, height, nnInputWidth, nnInputHeight);
 }
 
 int main(int argc, char** argv) {
@@ -226,6 +268,7 @@ int main(int argc, char** argv) {
     bool lrcheck, extended, subpixel, enableDepth;
     int confidence, LRchecktresh;
     int monoWidth, monoHeight;
+    int nnInputWidth, nnInputHeight;
     dai::Pipeline pipeline;
     bool publish_grayscale_image, publish_depth_image;
 
@@ -285,17 +328,17 @@ int main(int argc, char** argv) {
     nnConfigPath = resourceBaseFolder + "/" + nnConfig;
     //std::cout << " Path config: " << nnConfigPath <<std::endl;
     
-    std::tie(pipeline, monoWidth, monoHeight) = createPipeline(lrcheck, 
-                                                               extended, 
-                                                               syncNN, 
-                                                               subpixel, 
-                                                               nnPath, 
-                                                               nnConfigPath, //
-                                                               confidence, 
-                                                               LRchecktresh, 
-                                                               monoResolution,
-                                                               publish_grayscale_image, 
-                                                               publish_depth_image);
+    std::tie(pipeline, monoWidth, monoHeight, nnInputWidth, nnInputHeight) = createPipeline(lrcheck, 
+                                                                                              extended, 
+                                                                                              syncNN, 
+                                                                                              subpixel, 
+                                                                                              nnPath, 
+                                                                                              nnConfigPath, //
+                                                                                              confidence, 
+                                                                                              LRchecktresh, 
+                                                                                              monoResolution,
+                                                                                              publish_grayscale_image, 
+                                                                                              publish_depth_image);
     
     dai::Device device(pipeline);
 
@@ -399,7 +442,7 @@ int main(int argc, char** argv) {
         depthPublish->addPublisherCallback();
     }
 
-    dai::rosBridge::SpatialDetectionConverter detConverter(tfPrefix + "_rgb_camera_optical_frame", 416, 416, false);//monoWidth, monoHeight);
+    dai::rosBridge::SpatialDetectionConverter detConverter(tfPrefix + "_rgb_camera_optical_frame", nnInputWidth, nnInputHeight, false);
     dai::rosBridge::BridgePublisher<depthai_ros_msgs::msg::SpatialDetectionArray, dai::SpatialImgDetections> detectionPublish(
         detectionQueue,
         node,
