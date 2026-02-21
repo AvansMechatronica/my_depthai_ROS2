@@ -27,6 +27,8 @@ Na training dient het netwerkbestand `best.pt` geconverteerd te worden naar een 
 
 Gebruik hiervoor de [luxonis conversie tool](https://tools.luxonis.com/)
 
+![image](../images/luxonis-tools.png)
+
 Na conversie worden 2 bestanden gegenereerd:
 * `*.blob`: Eigenlijke AI Netwerk, welke in de camera wordt geladen
 
@@ -44,7 +46,6 @@ Vervang de volgende regels:
 ```python
 nnName = LaunchConfiguration('nnName', default = "SimpleFruitsYoloV8.blob")
 nnConfig = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV8.json")
-
 ```
 
 door:

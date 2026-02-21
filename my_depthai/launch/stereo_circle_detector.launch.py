@@ -4,6 +4,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription, launch_description_sources
 from launch.actions import IncludeLaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 import launch_ros.actions
 import launch_ros.descriptions
@@ -34,6 +35,7 @@ def generate_launch_description():
     confidence     = LaunchConfiguration('confidence', default = 200)
     LRchecktresh   = LaunchConfiguration('LRchecktresh', default = 5)
     monoResolution = LaunchConfiguration('monoResolution',  default = '400p')
+    rviz           = LaunchConfiguration('rviz', default = True)
 
 
     declare_camera_model_cmd = DeclareLaunchArgument(
@@ -120,6 +122,11 @@ def generate_launch_description():
         'monoResolution',
         default_value=monoResolution,
         description='Contains the resolution of the Mono Cameras. Available resolutions are 800p, 720p & 400p for OAK-D & 480p for OAK-D-Lite.')
+
+    declare_rviz_cmd = DeclareLaunchArgument(
+        'rviz',
+        default_value=rviz,
+        description='Start RViz (true/false).')
 
     urdf_launch = IncludeLaunchDescription(
                             launch_description_sources.PythonLaunchDescriptionSource(
@@ -213,6 +220,7 @@ def generate_launch_description():
     
     rviz_node = launch_ros.actions.Node(
             package='rviz2', executable='rviz2', output='screen',
+            condition=IfCondition(rviz),
             arguments=['--display-config', default_rviz])
 
     circle_detector_node = launch_ros.actions.Node(
@@ -241,6 +249,7 @@ def generate_launch_description():
     ld.add_action(declare_confidence_cmd)
     ld.add_action(declare_LRchecktresh_cmd)
     ld.add_action(declare_monoResolution_cmd)
+    ld.add_action(declare_rviz_cmd)
 
     ld.add_action(stereo_node)
     ld.add_action(urdf_launch)

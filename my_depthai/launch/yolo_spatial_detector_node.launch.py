@@ -4,6 +4,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription, launch_description_sources
 from launch.actions import IncludeLaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 import launch_ros.actions
 import launch_ros.descriptions
@@ -51,6 +52,7 @@ def generate_launch_description():
     monoResolution      = LaunchConfiguration('monoResolution',  default = '400p')
     publish_grayscale_image  = LaunchConfiguration('publish_grayscale_image', default = True)
     publish_depth_image      = LaunchConfiguration('publish_depth_image', default = True)
+    rviz                 = LaunchConfiguration('rviz', default = True)
 
     declare_camera_model_cmd = DeclareLaunchArgument(
         'camera_model',
@@ -167,6 +169,11 @@ def generate_launch_description():
         default_value=publish_grayscale_image,
         description='Specifies using gray-scale_image publishing')
 
+    declare_rviz_cmd = DeclareLaunchArgument(
+        'rviz',
+        default_value=rviz,
+        description='Start RViz (true/false).')
+
 
     urdf_launch = IncludeLaunchDescription(
                             launch_description_sources.PythonLaunchDescriptionSource(
@@ -267,6 +274,7 @@ def generate_launch_description():
 
     rviz_node = launch_ros.actions.Node(
             package='rviz2', executable='rviz2', output='screen',
+            condition=IfCondition(rviz),
             arguments=['--display-config', default_rviz])
 
     bounding_boxes_node = launch_ros.actions.Node(
@@ -319,6 +327,7 @@ def generate_launch_description():
     ld.add_action(declare_monoResolution_cmd)
     ld.add_action(declare_publish_depth_image_cmd)    
     ld.add_action(declare_publish_grayscale_image_cmd)
+    ld.add_action(declare_rviz_cmd)
 
     ld.add_action(yolo_spatial_detector_node)
 
