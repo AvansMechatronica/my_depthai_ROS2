@@ -18,6 +18,7 @@ def generate_launch_description():
                                 'rviz', 'spatialDetections.rviz')
     
     urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
+    urdf_launch_dir = os.path.join(get_package_share_directory('my_depthai'), 'launch')
     default_resources_path = os.path.join(depthai_examples_path,
                                 'resources')
     print('Default resources path..............')
@@ -25,7 +26,7 @@ def generate_launch_description():
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
     tf_prefix    = LaunchConfiguration('tf_prefix',     default = 'oak')
     base_frame   = LaunchConfiguration('base_frame',    default = 'oak-d_frame')
-    parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-world')
+    parent_frame = LaunchConfiguration('parent_frame',  default = 'world')
     spatial_camera = LaunchConfiguration('spatial_camera',  default = True)
 
 

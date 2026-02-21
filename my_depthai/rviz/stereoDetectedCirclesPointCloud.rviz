@@ -9,6 +9,7 @@ Panels:
         - /image_rect1
         - /PointCloud21
         - /PointCloud21/Topic1
+        - /RobotModel1
         - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.5
@@ -103,7 +104,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /robot_description
+        Value: /camera_description
       Enabled: true
       Links:
         All Links Enabled: true
@@ -112,10 +113,6 @@ Visualization Manager:
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
         oak-d_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        oak-world:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -149,6 +146,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         oak_right_camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        world:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -197,8 +198,6 @@ Visualization Manager:
         All Enabled: false
         oak-d_frame:
           Value: false
-        oak-world:
-          Value: true
         oak_imu_frame:
           Value: false
         oak_left_camera_frame:
@@ -215,13 +214,15 @@ Visualization Manager:
           Value: false
         oak_right_camera_optical_frame:
           Value: false
+        world:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        oak-world:
+        world:
           oak-d_frame:
             oak_imu_frame:
               {}
@@ -241,7 +242,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: oak-world
+    Fixed Frame: world
     Frame Rate: 30
   Name: root
   Tools:
@@ -282,7 +283,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 0.06011776998639107
+      Distance: 0.07541172951459885
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

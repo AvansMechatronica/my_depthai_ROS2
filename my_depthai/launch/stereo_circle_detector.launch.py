@@ -13,13 +13,13 @@ import launch_ros.descriptions
 def generate_launch_description():
     default_rviz = os.path.join(get_package_share_directory('my_depthai'),
                                 'rviz', 'stereoDetectedCirclesPointCloud.rviz')
-    urdf_launch_dir = os.path.join(get_package_share_directory('depthai_descriptions'), 'launch')
+    urdf_launch_dir = os.path.join(get_package_share_directory('my_depthai'), 'launch')
     
 
     camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
     tf_prefix  = LaunchConfiguration('tf_prefix',   default = 'oak')
     base_frame   = LaunchConfiguration('base_frame',    default = 'oak-d_frame')
-    parent_frame = LaunchConfiguration('parent_frame',  default = 'oak-world')
+    parent_frame = LaunchConfiguration('parent_frame',  default = 'world')
 
     cam_pos_x  = LaunchConfiguration('cam_pos_x',     default = '0.25')
     cam_pos_y  = LaunchConfiguration('cam_pos_y',     default = '0.0')
