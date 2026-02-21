@@ -1,9 +1,8 @@
 # Applicaties
 
 
-
 ## Cirkel detector
-Deze applicatie demonstreet een cirkel detect in een image en publiceert de gedetecteerd circles isn een nieuw image.
+Deze applicatie demonstreet een cirkel detect in een afbeelding en publiceert de gedetecteerd circles in een nieuwe afbeelding.
 
 ```bash
 ros2 launch my_depthai stereo_circle_detector.launch.py
@@ -11,9 +10,11 @@ ros2 launch my_depthai stereo_circle_detector.launch.py
 ![image](../images/circle_detector.png)
 
 
-## Neural network detector
+## Yolo spatial(ruimtelijk) network detector
+Deze appilicatie  demonsteert de cassificatie en positie van een object gedetecteerd met een neuraal netwerk. De positie van het object is relatief t.o.v de camera.
+
 ```bash
-ros2 launch my_depthai stereo_circle_detector.launch.py
+ros2 launch my_depthai yolo_spatial_detector_node.launch.py
 ```
 ![image](../images/camera_opstelling.png)
 ![image](../images/nn_objects.jpg)
@@ -29,6 +30,7 @@ nnConfig = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV8.json")
 
 
 ### Verklaring ROS topics (`ros2 topic list`)
+Deze topics worden gepubliceerd door de Yolo spatial network detector
 
 - `/clicked_point`: Door RViz aangeklikt 3D-punt.
 - `/color/ObjectText`: Tekstlabel(s) van gedetecteerde objecten.
@@ -63,7 +65,6 @@ nnConfig = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV8.json")
 - `/right/image_rect/theora`: Theora-stream van rechter beeld.
 - `/right/image_rect/zstd`: Zstd-stream van rechter beeld.
 - `/robot_description`: URDF robotbeschrijving.
-- `/rosout`: Centrale ROS2 log-output.
 - `/stereo/camera_info`: Camera-info van de stereo/depth-pipeline.
 - `/stereo/converted_depth`: Geconverteerd dieptebeeld.
 - `/stereo/converted_depth/compressed`: Gecomprimeerde versie van geconverteerde diepte.
