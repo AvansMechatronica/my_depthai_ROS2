@@ -16,9 +16,9 @@ ros2 launch my_depthai yolo_spatial_detector_node.launch.py rviz:=false
 Start de camera-applicatie op zonder dat je RVIZ start, zie hierboven.
 Start je "eigen" robot applicatie met daarin de eigen RVIZ visualisatie. 
 
-Voeg vervolgens een `RobotModel` toe met als `Description Topic` het `/camera_description` topic.
+Voeg in de RVIZ-configuratie een `RobotModel` toe met als `Description Topic` het `/camera_description` topic.
 
-Voeg vervolgens topics toe die door de camera worden gegenereerd zoals bv.
+Voeg vervolgens in de RVIZ-configuratie topics toe die door de camera worden gegenereerd zoals bv.
 
 ```
 Image: /color/image_rect
