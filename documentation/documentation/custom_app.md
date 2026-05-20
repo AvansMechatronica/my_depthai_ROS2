@@ -1,6 +1,7 @@
 # Aangepaste applicaties
 
-Je kunt ook een eigen aangepaste applicatie maken voor de Luxonis DepthAI hardware. Dit kan handig zijn als je specifieke functionaliteiten wilt implementeren die niet worden gedekt door de standaardapplicaties.
+Je kunt ook een eigen aangepaste applicatie maken voor de Luxonis DepthAI hardware. Dit kan handig zijn als je specifieke functionaliteiten wilt implementeren die niet worden gedekt door de standaardapplicaties in de `my_depthai_ROS2` repository.
+
 ## Stappen om een aangepaste applicatie te maken
 
 * Maak een ROS package in je <workspace>/src
