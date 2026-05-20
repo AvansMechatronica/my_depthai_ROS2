@@ -79,3 +79,32 @@ Deze topics worden gepubliceerd door de Yolo spatial network detector
 - `/stereo/points`: Pointcloud op basis van stereodiepte.
 - `/tf`: Dynamische transformaties tussen frames.
 - `/tf_static`: Statische (niet-veranderende) transformaties.
+
+### `/color/yolov4_spatial_detections` topic voorbeeld: 
+Hier is een voorbeeld van een bericht dat wordt gepubliceerd op het `/color/yolov4_spatial_detections` topic, dat de resultaten van een YOLOv4-ruimtelijke detectie bevat. Dit bericht is in YAML-formaat en toont de gedetecteerde objecten, hun klassen, scores, bounding boxes en 3D-posities ten opzichte van de camera.
+
+```yaml
+header:
+  stamp:
+    sec: 1779299981
+    nanosec: 965254354
+  frame_id: oak_rgb_camera_optical_frame
+detections:
+- results:
+  - class_id: '1'
+    score: 0.9013671875
+  bbox:
+    center:
+      position:
+        x: 485.0
+        y: 270.5
+      theta: 0.0
+    size_x: 310.0
+    size_y: 489.0
+  position:
+    x: 0.1642097681760788
+    y: 0.04885092377662659
+    z: 0.906000018119812
+  is_tracking: false
+  tracking_id: ''
+  ```
