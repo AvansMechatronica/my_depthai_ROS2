@@ -15,6 +15,6 @@ Je kunt ook een eigen aangepaste applicatie maken voor de Luxonis DepthAI hardwa
 * Maak eventueel een custom ROS2 message aan.
 
 :::{note}
-Bestudeer de Luxonis documentatie goed, zodat je weet welke functionaliteiten er allemaal mogelijk zijn. Er zijn veel voorbeelden beschikbaar die je kunnen helpen bij het maken van jouw aangepaste applicatie. Zie [Software](https://docs.luxonis.com/software-v3/) voor meer informatie.
+Bestudeer de Luxonis documentatie goed, zodat je weet welke functionaliteiten er allemaal mogelijk zijn. Er zijn veel voorbeelden beschikbaar die je kunnen helpen bij het maken van jouw aangepaste applicatie. Zie [DepthAISoftware](https://docs.luxonis.com/software-v3/) voor meer informatie.
 :::
 
