@@ -20,6 +20,46 @@ ros2 launch my_depthai yolo_spatial_detector_node.launch.py
 ![image](../images/nn_objects.jpg)
 
 
+## Python template (DepthAI)
+Deze applicatie publiceert RGB-beelden van een OAK-camera op een ROS2 topic.
+
+```bash
+ros2 run my_depthai_python_template depthai_template
+```
+
+### Stabiele installatie (zonder system-pip)
+Gebruik een virtual environment en bouw de package in diezelfde environment. Dan krijgt de gegenereerde `ros2 run` entrypoint automatisch de juiste Python interpreter.
+
+```bash
+cd ~/my_depthai_ws/src/my_depthai_ROS2
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+
+# DepthAI python dependency
+python -m pip install depthai
+
+cd ~/my_depthai_ws
+source /opt/ros/jazzy/setup.bash
+colcon build --packages-select my_depthai_python_template
+source install/setup.bash
+ros2 run my_depthai_python_template depthai_template
+```
+
+### Optionele parameters
+- `topic_name` (default: `camera/rgb`)
+- `width` (default: `640`)
+- `height` (default: `400`)
+- `fps` (default: `30.0`)
+- `queue_size` (default: `4`)
+
+Voorbeeld:
+
+```bash
+ros2 run my_depthai_python_template depthai_template --ros-args -p topic_name:=camera/rgb_fast -p fps:=20.0
+```
+
+
 ### Configuratie neuraal netwerk
 Om een eigen netwerk te gebruiken plaats je het blob en json bestand van je netwerk in de `resources` map van de `my_depthai` package en configureert het `yolo_spatial_detector_node.launch.py` in de `launch` map van de `my_depthai` package op de volgende regels:
 
@@ -80,7 +120,7 @@ Deze topics worden gepubliceerd door de Yolo spatial network detector
 - `/tf`: Dynamische transformaties tussen frames.
 - `/tf_static`: Statische (niet-veranderende) transformaties.
 
-### `/color/yolov4_spatial_detections` topic voorbeeld: 
+### /color/yolov4_spatial_detections topic voorbeeld: 
 Hier is een voorbeeld van een bericht dat wordt gepubliceerd op het `/color/yolov4_spatial_detections` topic, dat de resultaten van een YOLOv4-ruimtelijke detectie bevat. Dit bericht is in YAML-formaat en toont de gedetecteerde objecten, hun klassen, scores, bounding boxes en 3D-posities ten opzichte van de camera.
 
 ```yaml
