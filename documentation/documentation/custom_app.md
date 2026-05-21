@@ -23,7 +23,7 @@ Bestudeer de Luxonis documentatie goed, zodat je weet welke functionaliteiten er
 Deze applicatie publiceert RGB-beelden van een OAK-camera op een ROS2 topic. Deze template kan worden gebruikt als basis voor het maken van een aangepaste applicatie die gebruikmaakt van de DepthAI hardware.
 
 ```bash
-ros2 run my_depthai_python_template depthai_template
+ros2 run my_depthai_python depthai_template
 ```
 
 ### Stabiele installatie (zonder system-pip)
@@ -40,9 +40,9 @@ python -m pip install depthai
 
 cd ~/my_depthai_ws
 source /opt/ros/jazzy/setup.bash
-colcon build --packages-select my_depthai_python_template
+colcon build --packages-select my_depthai_python
 source install/setup.bash
-ros2 run my_depthai_python_template depthai_template
+ros2 run my_depthai_python depthai_template
 ```
 
 ### Optionele parameters
@@ -55,6 +55,6 @@ ros2 run my_depthai_python_template depthai_template
 Voorbeeld:
 
 ```bash
-ros2 run my_depthai_python_template depthai_template --ros-args -p topic_name:=camera/rgb_fast -p fps:=20.0
+ros2 run my_depthai_python depthai_template --ros-args -p topic_name:=camera/rgb_fast -p fps:=20.0
 ```
 
