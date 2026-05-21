@@ -40,7 +40,7 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(exclude=['test']),
-    data_files=package_files(data_files, ['launch/', 'rviz/']),
+    data_files=package_files(data_files, ['launch/', 'rviz/', 'resources/']),
     install_requires=[
         'setuptools',
         'depthai>=3.6.0',
@@ -58,7 +58,7 @@ setup(
     entry_points={
         'console_scripts': [
             'depthai_template=my_depthai_python.depthai_template:main',
-
+            'spatial_detector=my_depthai_python.spatial_detector:main',
         ],
     },
 )
