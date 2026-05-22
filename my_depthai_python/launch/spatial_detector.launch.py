@@ -13,6 +13,16 @@ def generate_launch_description() -> LaunchDescription:
         default_value='camera/rgb',
         description='Output image topic for DepthAI RGB frames',
     )
+    depth_topic_arg = DeclareLaunchArgument(
+        'depth_topic',
+        default_value='stereo/depth',
+        description='Output topic for raw DepthAI depth frames',
+    )
+    depth_preview_topic_arg = DeclareLaunchArgument(
+        'depth_preview_topic',
+        default_value='stereo/depth_color',
+        description='Output topic for colorized DepthAI depth preview frames',
+    )
     detections_topic_arg = DeclareLaunchArgument(
         'detections_topic',
         default_value='spatial_detections',
@@ -30,8 +40,13 @@ def generate_launch_description() -> LaunchDescription:
     )
     fps_arg = DeclareLaunchArgument(
         'fps',
-        default_value='20.0',
+        default_value='10.0',
         description='Camera FPS',
+    )
+    queue_size_arg = DeclareLaunchArgument(
+        'queue_size',
+        default_value='2',
+        description='DepthAI output queue size for RGB and detections',
     )
     reconnect_cooldown_arg = DeclareLaunchArgument(
         'reconnect_cooldown_sec',
@@ -42,6 +57,12 @@ def generate_launch_description() -> LaunchDescription:
         'max_reconnect_attempts',
         default_value='20',
         description='Maximum reconnect attempts; set -1 to retry forever',
+    )
+    pipeline_mode_arg = DeclareLaunchArgument(
+        'pipeline_mode',
+        default_value='v3',
+        choices=['v3', 'legacy'],
+        description='Detector pipeline implementation: v3 (Camera API) or legacy',
     )
     start_urdf_arg = DeclareLaunchArgument(
         'start_urdf',
@@ -104,6 +125,12 @@ def generate_launch_description() -> LaunchDescription:
         choices=['stereo', 'neural'],
         description='Depth source: stereo (StereoDepth) or neural (NeuralDepth)',
     )
+    stereo_extended_disparity_arg = DeclareLaunchArgument(
+        'stereo_extended_disparity',
+        default_value='false',
+        choices=['true', 'false'],
+        description='Enable StereoDepth extended disparity (higher disparity range, higher load)',
+    )
     blob_name_arg = DeclareLaunchArgument(
         'blob_name',
         default_value='SimpleFruitsYoloV5.blob',
@@ -132,16 +159,23 @@ def generate_launch_description() -> LaunchDescription:
         executable='spatial_detector',
         name='spatial_detector',
         output='screen',
+        respawn=True,
+        respawn_delay=2.0,
         parameters=[
             {
                 'image_topic': LaunchConfiguration('image_topic'),
+                'depth_topic': LaunchConfiguration('depth_topic'),
+                'depth_preview_topic': LaunchConfiguration('depth_preview_topic'),
                 'detections_topic': LaunchConfiguration('detections_topic'),
                 'width': LaunchConfiguration('width'),
                 'height': LaunchConfiguration('height'),
                 'fps': LaunchConfiguration('fps'),
+                'queue_size': LaunchConfiguration('queue_size'),
                 'reconnect_cooldown_sec': LaunchConfiguration('reconnect_cooldown_sec'),
                 'max_reconnect_attempts': LaunchConfiguration('max_reconnect_attempts'),
+                'pipeline_mode': LaunchConfiguration('pipeline_mode'),
                 'depth_source': LaunchConfiguration('depth_source'),
+                'stereo_extended_disparity': LaunchConfiguration('stereo_extended_disparity'),
                 'blob_name': LaunchConfiguration('blob_name'),
                 'config_name': LaunchConfiguration('config_name'),
             }
@@ -181,12 +215,16 @@ def generate_launch_description() -> LaunchDescription:
     return LaunchDescription(
         [
             image_topic_arg,
+            depth_topic_arg,
+            depth_preview_topic_arg,
             detections_topic_arg,
             width_arg,
             height_arg,
             fps_arg,
+            queue_size_arg,
             reconnect_cooldown_arg,
             max_reconnect_attempts_arg,
+            pipeline_mode_arg,
             start_urdf_arg,
             camera_model_arg,
             tf_prefix_arg,
@@ -199,6 +237,7 @@ def generate_launch_description() -> LaunchDescription:
             cam_pitch_arg,
             cam_yaw_arg,
             depth_source_arg,
+            stereo_extended_disparity_arg,
             blob_name_arg,
             config_name_arg,
             start_rviz_arg,

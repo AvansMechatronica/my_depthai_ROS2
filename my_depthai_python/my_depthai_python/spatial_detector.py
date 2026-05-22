@@ -5,6 +5,9 @@ import sys
 import time
 from pathlib import Path
 
+import cv2
+import numpy as np
+
 try:
     import depthai as dai
 except ImportError as exc:
@@ -48,11 +51,28 @@ def _get_mono_resolution(width: int, height: int):
     )
 
 
+def _colorize_depth_frame(depth_frame: np.ndarray) -> np.ndarray:
+    depth_downscaled = depth_frame[::4]
+    if np.all(depth_downscaled == 0):
+        min_depth = 0
+    else:
+        min_depth = np.percentile(depth_downscaled[depth_downscaled != 0], 1)
+    max_depth = np.percentile(depth_downscaled, 99)
+    depth_frame_color = np.interp(
+        depth_frame,
+        (min_depth, max_depth),
+        (0, 255),
+    ).astype(np.uint8)
+    return cv2.applyColorMap(depth_frame_color, cv2.COLORMAP_HOT)
+
+
 class SpatialDetectorNode(Node):
     def __init__(self):
         super().__init__('spatial_detector')
 
         self.declare_parameter('image_topic', 'camera/rgb')
+        self.declare_parameter('depth_topic', 'stereo/depth')
+        self.declare_parameter('depth_preview_topic', 'stereo/depth_color')
         self.declare_parameter('detections_topic', 'spatial_detections')
         self.declare_parameter('width', 640)
         self.declare_parameter('height', 400)
@@ -60,7 +80,9 @@ class SpatialDetectorNode(Node):
         self.declare_parameter('queue_size', 4)
         self.declare_parameter('reconnect_cooldown_sec', 2.0)
         self.declare_parameter('max_reconnect_attempts', 20)
+        self.declare_parameter('pipeline_mode', 'v3')
         self.declare_parameter('depth_source', 'stereo')
+        self.declare_parameter('stereo_extended_disparity', False)
         self.declare_parameter('blob_name', 'SimpleFruitsYoloV5.blob')
         self.declare_parameter('config_name', 'SimpleFruitsYoloV5.json')
 
@@ -74,10 +96,16 @@ class SpatialDetectorNode(Node):
         self.max_reconnect_attempts = int(
             self.get_parameter('max_reconnect_attempts').value
         )
+        pipeline_mode = self.get_parameter('pipeline_mode').value
         depth_source = self.get_parameter('depth_source').value
+        stereo_extended_disparity = bool(
+            self.get_parameter('stereo_extended_disparity').value
+        )
         blob_name = self.get_parameter('blob_name').value
         config_name = self.get_parameter('config_name').value
         image_topic = self.get_parameter('image_topic').value
+        depth_topic = self.get_parameter('depth_topic').value
+        depth_preview_topic = self.get_parameter('depth_preview_topic').value
         detections_topic = self.get_parameter('detections_topic').value
         self.frame_id = 'oak_rgb_camera_optical_frame'
         timer_period = 1.0 / fps if fps > 0.0 else 1.0 / 20.0
@@ -100,30 +128,41 @@ class SpatialDetectorNode(Node):
 
         self.bridge = CvBridge()
         self.image_pub = self.create_publisher(Image, image_topic, 10)
+        self.depth_pub = self.create_publisher(Image, depth_topic, 10)
+        self.depth_preview_pub = self.create_publisher(Image, depth_preview_topic, 10)
         self.detection_pub = self.create_publisher(
             SpatialDetectionArray, detections_topic, 10
         )
 
         self.pipeline = None
         self.rgb_queue = None
+        self.depth_queue = None
         self.detection_queue = None
         self.timer = None
+        self._last_rgb_image = None
+        self._last_depth_image = None
+        self._last_depth_preview_image = None
         self._reconnect_attempts = 0
         self._last_reconnect_attempt = 0.0
+        self._reconnect_exhausted_logged = False
 
         self.pipeline_config = {
             'fps': fps,
+            'pipeline_mode': pipeline_mode,
             'rgb_width': rgb_width,
             'rgb_height': rgb_height,
             'depth_width': depth_width,
             'depth_height': depth_height,
             'depth_source': depth_source,
+            'stereo_extended_disparity': stereo_extended_disparity,
             'blob_path': blob_path,
             'metadata': metadata,
             'labels': labels,
             'blob_name': blob_name,
             'config_name': config_name,
             'image_topic': image_topic,
+            'depth_topic': depth_topic,
+            'depth_preview_topic': depth_preview_topic,
             'detections_topic': detections_topic,
         }
 
@@ -135,43 +174,31 @@ class SpatialDetectorNode(Node):
 
         self.pipeline = dai.Pipeline()
 
-        color_cam = self.pipeline.create(dai.node.ColorCamera)
-        color_cam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
-        color_cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-        color_cam.setPreviewSize(cfg['rgb_width'], cfg['rgb_height'])
-        color_cam.setVideoSize(cfg['rgb_width'], cfg['rgb_height'])
-        color_cam.setInterleaved(False)
-        color_cam.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
-        color_cam.setPreviewKeepAspectRatio(False)
-        color_cam.setFps(cfg['fps'])
-
-        mono_resolution = _get_mono_resolution(cfg['depth_width'], cfg['depth_height'])
-        mono_left = self.pipeline.create(dai.node.MonoCamera)
-        mono_left.setBoardSocket(dai.CameraBoardSocket.CAM_B)
-        mono_left.setResolution(mono_resolution)
-        mono_left.setFps(cfg['fps'])
-
-        mono_right = self.pipeline.create(dai.node.MonoCamera)
-        mono_right.setBoardSocket(dai.CameraBoardSocket.CAM_C)
-        mono_right.setResolution(mono_resolution)
-        mono_right.setFps(cfg['fps'])
-
-        if cfg['depth_source'] == 'stereo':
-            depth_node = self.pipeline.create(dai.node.StereoDepth)
-            depth_node.setExtendedDisparity(True)
-            depth_node.setDepthAlign(dai.CameraBoardSocket.CAM_A)
-            mono_left.out.link(depth_node.left)
-            mono_right.out.link(depth_node.right)
-        elif cfg['depth_source'] == 'neural':
-            depth_node = self.pipeline.create(dai.node.NeuralDepth).build(
-                mono_left.out,
-                mono_right.out,
-                dai.DeviceModelZoo.NEURAL_DEPTH_LARGE,
-            )
+        if cfg['pipeline_mode'] == 'legacy':
+            self.get_logger().info("Using legacy pipeline construction (DepthAI v2 style).")
+            self._build_pipeline_legacy(cfg)
+        elif cfg['pipeline_mode'] == 'v3':
+            self.get_logger().info("Using v3 pipeline construction (DepthAI v3 style).")
+            self._build_pipeline_v3(cfg)
         else:
-            self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
-            raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
+            raise ValueError(
+                f"Invalid pipeline_mode: {cfg['pipeline_mode']!r}. Use 'legacy' or 'v3'."
+            )
 
+        self.pipeline.start()
+        self._reconnect_attempts = 0
+        self._reconnect_exhausted_logged = False
+        self.get_logger().info(
+            f"SpatialDetector started - mode={cfg['pipeline_mode']!r} blob={cfg['blob_name']!r} "
+            f"config={cfg['config_name']!r} depth={cfg['depth_source']!r} "
+            f"extended_disparity={cfg['stereo_extended_disparity']!r} "
+            f"rgb_size={self.width}x{self.height} fps={cfg['fps']} "
+            f"image->{cfg['image_topic']!r} depth->{cfg['depth_topic']!r} "
+            f"depth_preview->{cfg['depth_preview_topic']!r} "
+            f"detections->{cfg['detections_topic']!r}"
+        )
+
+    def _configure_spatial_network(self, cfg: dict):
         spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork)
         spatial_det_net.setBlobPath(cfg['blob_path'])
         spatial_det_net.input.setBlocking(False)
@@ -202,8 +229,127 @@ class SpatialDetectorNode(Node):
         spatial_det_net.spatialLocationCalculator.initialConfig.setSegmentationPassthrough(
             False
         )
+        return spatial_det_net
 
-        # Use ImageManip to ensure proper format conversion
+    def _build_pipeline_v3(self, cfg: dict):
+        nn_width = 512
+        nn_height = 384
+
+        cam_rgb = self.pipeline.create(dai.node.Camera).build(
+            dai.CameraBoardSocket.CAM_A,
+            sensorFps=cfg['fps'],
+        )
+        mono_left = self.pipeline.create(dai.node.Camera).build(
+            dai.CameraBoardSocket.CAM_B,
+            sensorFps=cfg['fps'],
+        )
+        mono_right = self.pipeline.create(dai.node.Camera).build(
+            dai.CameraBoardSocket.CAM_C,
+            sensorFps=cfg['fps'],
+        )
+
+        rgb_out = cam_rgb.requestOutput(
+            size=(nn_width, nn_height),
+            fps=cfg['fps'],
+        )
+
+        if cfg['depth_source'] == 'stereo':
+            depth_node = self.pipeline.create(dai.node.StereoDepth)
+            depth_node.setExtendedDisparity(cfg['stereo_extended_disparity'])
+            depth_node.setDepthAlign(dai.CameraBoardSocket.CAM_A)
+            mono_left.requestOutput((cfg['depth_width'], cfg['depth_height'])).link(
+                depth_node.left
+            )
+            mono_right.requestOutput((cfg['depth_width'], cfg['depth_height'])).link(
+                depth_node.right
+            )
+        elif cfg['depth_source'] == 'neural':
+            depth_node = self.pipeline.create(dai.node.NeuralDepth).build(
+                mono_left.requestFullResolutionOutput(),
+                mono_right.requestFullResolutionOutput(),
+                dai.DeviceModelZoo.NEURAL_DEPTH_LARGE,
+            )
+        else:
+            self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
+            raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
+
+        test_w_yolo_v6_nano = True
+        if test_w_yolo_v6_nano:
+            modelDescription = dai.NNModelDescription("yolov6-nano")
+            spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(
+            cam_rgb, depth_node, modelDescription)
+            spatial_det_net.spatialLocationCalculator.initialConfig.setSegmentationPassthrough(False)
+            spatial_det_net.input.setBlocking(False)
+            spatial_det_net.setDepthLowerThreshold(100)
+            spatial_det_net.setDepthUpperThreshold(5000)
+        else:
+            spatial_det_net = self._configure_spatial_network(cfg)   
+
+        manip = self.pipeline.create(dai.node.ImageManip)
+        manip.initialConfig.setOutputSize(nn_width, nn_height)
+        manip.initialConfig.setFrameType(dai.ImgFrame.Type.BGR888p)
+        manip.setMaxOutputFrameSize(nn_width * nn_height * 3)
+
+        # Keep published image size and bbox scaling aligned with the actual NN input.
+        self.width = nn_width
+        self.height = nn_height
+
+        rgb_out.link(manip.inputImage)
+        manip.out.link(spatial_det_net.input)
+
+        self.rgb_queue = manip.out.createOutputQueue(
+            maxSize=self.queue_size,
+            blocking=False,
+        )
+        self.depth_queue = depth_node.depth.createOutputQueue(
+            maxSize=self.queue_size,
+            blocking=False,
+        )
+        self.detection_queue = spatial_det_net.out.createOutputQueue(
+            maxSize=self.queue_size,
+            blocking=False,
+        )
+
+    def _build_pipeline_legacy(self, cfg: dict):
+        color_cam = self.pipeline.create(dai.node.ColorCamera)
+        color_cam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
+        color_cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+        color_cam.setPreviewSize(cfg['rgb_width'], cfg['rgb_height'])
+        color_cam.setVideoSize(cfg['rgb_width'], cfg['rgb_height'])
+        color_cam.setInterleaved(False)
+        color_cam.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
+        color_cam.setPreviewKeepAspectRatio(False)
+        color_cam.setFps(cfg['fps'])
+
+        mono_resolution = _get_mono_resolution(cfg['depth_width'], cfg['depth_height'])
+        mono_left = self.pipeline.create(dai.node.MonoCamera)
+        mono_left.setBoardSocket(dai.CameraBoardSocket.CAM_B)
+        mono_left.setResolution(mono_resolution)
+        mono_left.setFps(cfg['fps'])
+
+        mono_right = self.pipeline.create(dai.node.MonoCamera)
+        mono_right.setBoardSocket(dai.CameraBoardSocket.CAM_C)
+        mono_right.setResolution(mono_resolution)
+        mono_right.setFps(cfg['fps'])
+
+        if cfg['depth_source'] == 'stereo':
+            depth_node = self.pipeline.create(dai.node.StereoDepth)
+            depth_node.setExtendedDisparity(cfg['stereo_extended_disparity'])
+            depth_node.setDepthAlign(dai.CameraBoardSocket.CAM_A)
+            mono_left.out.link(depth_node.left)
+            mono_right.out.link(depth_node.right)
+        elif cfg['depth_source'] == 'neural':
+            depth_node = self.pipeline.create(dai.node.NeuralDepth).build(
+                mono_left.out,
+                mono_right.out,
+                dai.DeviceModelZoo.NEURAL_DEPTH_LARGE,
+            )
+        else:
+            self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
+            raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
+
+        spatial_det_net = self._configure_spatial_network(cfg)
+
         manip = self.pipeline.create(dai.node.ImageManip)
         manip.initialConfig.setOutputSize(cfg['rgb_width'], cfg['rgb_height'])
         manip.initialConfig.setFrameType(dai.ImgFrame.Type.BGR888p)
@@ -213,8 +359,11 @@ class SpatialDetectorNode(Node):
         manip.out.link(spatial_det_net.input)
         depth_node.depth.link(spatial_det_net.inputDepth)
 
-        # Create output queues - from manip (resized RGB) and network detections
         self.rgb_queue = manip.out.createOutputQueue(
+            maxSize=self.queue_size,
+            blocking=False,
+        )
+        self.depth_queue = depth_node.depth.createOutputQueue(
             maxSize=self.queue_size,
             blocking=False,
         )
@@ -223,19 +372,17 @@ class SpatialDetectorNode(Node):
             blocking=False,
         )
 
-        # Start the pipeline
-        self.pipeline.start()
-        self.get_logger().info(
-            f"SpatialDetector started - blob={cfg['blob_name']!r} config={cfg['config_name']!r} "
-            f"depth={cfg['depth_source']!r} rgb_size={self.width}x{self.height} fps={cfg['fps']} "
-            f"image->{cfg['image_topic']!r} detections->{cfg['detections_topic']!r}"
-        )
-
     def _is_link_disconnect_error(self, exc: Exception) -> bool:
         message = str(exc)
         return any(
             token in message
-            for token in ('X_LINK_ERROR', 'Closed connection', 'Communication exception')
+            for token in (
+                'X_LINK_ERROR',
+                'Closed connection',
+                'Communication exception',
+                'MessageQueue was closed',
+                'Node threw exception',
+            )
         )
 
     def _restart_pipeline(self):
@@ -247,11 +394,13 @@ class SpatialDetectorNode(Node):
             self.max_reconnect_attempts >= 0
             and self._reconnect_attempts >= self.max_reconnect_attempts
         ):
-            self.get_logger().error(
-                'Pipeline reconnect budget exhausted. '
-                f'Increase max_reconnect_attempts (current={self.max_reconnect_attempts}) '
-                'or inspect USB/power stability.'
-            )
+            if not self._reconnect_exhausted_logged:
+                self._reconnect_exhausted_logged = True
+                self.get_logger().error(
+                    'Pipeline reconnect budget exhausted. '
+                    f'Increase max_reconnect_attempts (current={self.max_reconnect_attempts}) '
+                    'or inspect USB/power stability.'
+                )
             return
 
         self._last_reconnect_attempt = now
@@ -268,27 +417,70 @@ class SpatialDetectorNode(Node):
             pass
 
         self.rgb_queue = None
+        self.depth_queue = None
         self.detection_queue = None
+        self._last_rgb_image = None
+        self._last_depth_image = None
+        self._last_depth_preview_image = None
 
         try:
             self._build_and_start_pipeline()
         except Exception as restart_exc:
             self.get_logger().error(f'Pipeline restart failed: {restart_exc}')
 
+    @staticmethod
+    def _get_latest_message(queue):
+        latest_msg = None
+        while True:
+            msg = queue.tryGet()
+            if msg is None:
+                break
+            latest_msg = msg
+        return latest_msg
+
     def timer_callback(self):
         try:
-            if self.rgb_queue is None or self.detection_queue is None:
+            if (
+                self.rgb_queue is None
+                or self.depth_queue is None
+                or self.detection_queue is None
+            ):
                 return
-            rgb_msg = self.rgb_queue.tryGet()
+            stamp = self.get_clock().now().to_msg()
+
+            rgb_msg = self._get_latest_message(self.rgb_queue)
             if rgb_msg is not None:
-                ros_image = self.bridge.cv2_to_imgmsg(
+                self._last_rgb_image = self.bridge.cv2_to_imgmsg(
                     rgb_msg.getCvFrame(), encoding='bgr8'
                 )
-                ros_image.header.stamp = self.get_clock().now().to_msg()
-                ros_image.header.frame_id = self.frame_id
-                self.image_pub.publish(ros_image)
+            if self._last_rgb_image is not None:
+                self._last_rgb_image.header.stamp = stamp
+                self._last_rgb_image.header.frame_id = self.frame_id
+                self.image_pub.publish(self._last_rgb_image)
 
-            detections_msg = self.detection_queue.tryGet()
+            depth_msg = self._get_latest_message(self.depth_queue)
+            if depth_msg is not None:
+                depth_frame = depth_msg.getCvFrame()
+                if depth_frame.ndim == 3 and depth_frame.shape[2] == 1:
+                    depth_frame = depth_frame[:, :, 0]
+                depth_frame = np.ascontiguousarray(depth_frame, dtype=np.uint16)
+                depth_frame_color = _colorize_depth_frame(depth_frame)
+                self._last_depth_image = self.bridge.cv2_to_imgmsg(
+                    depth_frame, encoding='16UC1'
+                )
+                self._last_depth_preview_image = self.bridge.cv2_to_imgmsg(
+                    depth_frame_color, encoding='bgr8'
+                )
+            if self._last_depth_image is not None:
+                self._last_depth_image.header.stamp = stamp
+                self._last_depth_image.header.frame_id = self.frame_id
+                self.depth_pub.publish(self._last_depth_image)
+            if self._last_depth_preview_image is not None:
+                self._last_depth_preview_image.header.stamp = stamp
+                self._last_depth_preview_image.header.frame_id = self.frame_id
+                self.depth_preview_pub.publish(self._last_depth_preview_image)
+
+            detections_msg = self._get_latest_message(self.detection_queue)
             if detections_msg is not None:
                 self.detection_pub.publish(self._to_detection_array(detections_msg))
         except RuntimeError as exc:
@@ -297,7 +489,10 @@ class SpatialDetectorNode(Node):
             else:
                 self.get_logger().error(f'Pipeline runtime error: {exc}')
         except Exception as exc:
-            self.get_logger().error(f'Pipeline publish error: {exc}')
+            if self._is_link_disconnect_error(exc):
+                self._restart_pipeline()
+            else:
+                self.get_logger().error(f'Pipeline publish error: {exc}')
 
     def _to_detection_array(self, detections_msg):
         detection_array = SpatialDetectionArray()
