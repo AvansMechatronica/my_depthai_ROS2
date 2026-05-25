@@ -40,7 +40,7 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(exclude=['test']),
-    data_files=package_files(data_files, ['launch/', 'rviz/', 'resources/']),
+    data_files=package_files(data_files, ['launch/', 'rviz/', 'resources/', 'config/']),
     install_requires=[
         'setuptools',
         'depthai>=3.6.0',

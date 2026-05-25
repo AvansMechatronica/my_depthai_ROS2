@@ -1,0 +1,27 @@
+spatial_detector:
+  ros__parameters:
+    image_topic: camera/rgb
+    depth_topic: stereo/depth
+    detections_topic: spatial_detections
+
+    width: 640
+    height: 400
+    fps: 10.0
+
+    queue_size: 2
+    reconnect_cooldown_sec: 2.0
+    max_reconnect_attempts: 20
+
+    pipeline_mode: v3
+    depth_source: stereo
+    stereo_extended_disparity: false
+
+    blob_name: SimpleFruitsYoloV5.blob
+    config_name: SimpleFruitsYoloV5.json
+
+    show_bounding_boxes: true
+    publish_images: true
+
+    auto_degrade_on_reconnect: true
+    reconnect_degrade_threshold: 3
+    degraded_fps: 5.0
