@@ -29,6 +29,13 @@ from depthai_ros_msgs.msg import SpatialDetection, SpatialDetectionArray
 debug = True
 
 def _get_resource_dir() -> Path:
+    """Bepaal de map met modelbestanden en configuratiebestanden.
+
+    Eerst wordt de ROS package-share locatie gebruikt. Als de package
+    niet via de ROS index gevonden wordt (bijvoorbeeld tijdens lokale
+    ontwikkeling), wordt teruggevallen op de resources-map relatief
+    aan dit Python-bestand.
+    """
     try:
         return Path(get_package_share_directory('my_depthai_python')) / 'resources'
     except PackageNotFoundError:
@@ -36,11 +43,18 @@ def _get_resource_dir() -> Path:
 
 
 def _load_network_config(config_path: Path) -> dict:
+    """Lees de netwerkconfiguratie (JSON) in vanaf schijf.
+
+    De inhoud wordt als dictionary teruggegeven zodat modelparameters
+    zoals input_size, labels en detectie-metadata later in de pipeline
+    kunnen worden toegepast.
+    """
     with config_path.open('r', encoding='utf-8') as handle:
         return json.load(handle)
 
 class Publisher(dai.node.HostNode):
     def __init__(self):
+        """Initialiseer de HostNode die pipeline-uitvoer naar ROS publiceert."""
         dai.node.HostNode.__init__(self)
         self.sendProcessingToPipeline(False)
 
@@ -58,6 +72,11 @@ class Publisher(dai.node.HostNode):
         publish_images=True,
         on_activity=None,
     ):
+        """Configureer de hostnode met ingangen, ROS publishers en callbacklogica.
+
+        De volgorde in link_args moet exact overeenkomen met de argumenten
+        van process(...), zodat DepthAI frames correct doorgeeft.
+        """
         self.image_pub = image_pub
         self.depth_pub = depth_pub
         self.detection_pub = detection_pub
@@ -69,6 +88,12 @@ class Publisher(dai.node.HostNode):
         self.link_args(depth, detections, rgb) # Must match the inputs to the process method
 
     def process(self, depthPreview, detections, rgbPreview):
+        """Verwerk een inkomende batch uit de pipeline en publiceer resultaten.
+
+        Depth en RGB frames worden naar OpenCV-conforme afbeeldingen
+        omgezet, waarna visualisatie en ROS-publicatie in een centrale
+        routine plaatsvinden.
+        """
         try:
             depthPreview = depthPreview.getCvFrame()
             rgbPreview = rgbPreview.getCvFrame()
@@ -78,6 +103,11 @@ class Publisher(dai.node.HostNode):
             print(f"Error in Publisher.process: {e}", flush=True)
 
     def processDepthFrame(self, depthFrame):
+        """Normaliseer een diepteframe en kleur het voor visualisatie.
+
+        Door percentielen te gebruiken in plaats van absolute min/max
+        wordt het contrast stabieler bij ruis en uitschieters.
+        """
         depthDownscaled = depthFrame[::4]
         if np.all(depthDownscaled == 0):
             minDepth = 0
@@ -88,6 +118,11 @@ class Publisher(dai.node.HostNode):
         return cv2.applyColorMap(depthFrameColor, cv2.COLORMAP_HOT)
 
     def publishResults(self, rgbFrame, depthFrameColor, detections):
+        """Teken detecties, publiceer ROS-berichten en werk activiteitsstatus bij.
+
+        In degraded mode kunnen beeldtopics worden overgeslagen, terwijl
+        detecties wel gepubliceerd blijven voor downstream nodes.
+        """
         height, width, _ = rgbFrame.shape
         if self.publish_images and self.show_bounding_boxes:
             for detection in detections:
@@ -111,6 +146,7 @@ class Publisher(dai.node.HostNode):
             print(f"Error publishing results: {e}", flush=True)
 
     def drawBoundingBoxes(self, depthFrameColor, detection):
+        """Teken de ROI van de depth-mapping voor een detectie op het dieptebeeld."""
         roiData = detection.boundingBoxMapping
         roi = roiData.roi
         roi = roi.denormalize(depthFrameColor.shape[1], depthFrameColor.shape[0])
@@ -119,6 +155,7 @@ class Publisher(dai.node.HostNode):
         cv2.rectangle(depthFrameColor, (int(topLeft.x), int(topLeft.y)), (int(bottomRight.x), int(bottomRight.y)), (255, 255, 255), 1)
 
     def drawDetections(self, frame, detection, frameWidth, frameHeight):
+        """Teken label, confidence en XYZ-coordinaten op het RGB-frame."""
         x1 = int(detection.xmin * frameWidth)
         x2 = int(detection.xmax * frameWidth)
         y1 = int(detection.ymin * frameHeight)
@@ -135,6 +172,11 @@ class Publisher(dai.node.HostNode):
 
 class SpatialDetectorNode(Node):
     def __init__(self):
+        """Initialiseer ROS-parameters, laad modelconfig en start de pipeline.
+
+        Deze constructor verzamelt runtime-instellingen, bouwt de
+        pipeline_config op en activeert direct de eerste pipeline-run.
+        """
         super().__init__('spatial_detector')
 
         self.declare_parameter('image_topic', 'camera/rgb')
@@ -204,9 +246,9 @@ class SpatialDetectorNode(Node):
         metadata = network_config['nn_config']['NN_specific_metadata']
         labels = network_config.get('mappings', {}).get('labels', [])
         input_size = network_config['nn_config']['input_size']
-        rgb_width, rgb_height = [int(value) for value in input_size.split('x', maxsplit=1)]
-        self.width = rgb_width
-        self.height = rgb_height
+        nn_width, nn_height = [int(value) for value in input_size.split('x', maxsplit=1)]
+        self.width = nn_width
+        self.height = nn_height
 
         self.image_pub = self.create_publisher(Image, image_topic, 10)
         self.depth_pub = self.create_publisher(Image, depth_topic, 10)
@@ -228,8 +270,8 @@ class SpatialDetectorNode(Node):
         self.pipeline_config = {
             'fps': fps,
             'pipeline_mode': pipeline_mode,
-            'rgb_width': rgb_width,
-            'rgb_height': rgb_height,
+            'nn_width': nn_width,
+            'nn_height': nn_height,
             'depth_width': depth_width,
             'depth_height': depth_height,
             'depth_source': depth_source,
@@ -252,6 +294,11 @@ class SpatialDetectorNode(Node):
         self._build_and_start_pipeline()
  
     def _build_and_start_pipeline(self):
+        """Bouw de volledige DepthAI pipeline en start de achtergrondthread.
+
+        Deze methode koppelt camera's, dieptebron en detectienetwerk,
+        configureert parserinstellingen en verbindt de Publisher-hostnode.
+        """
         cfg = self.pipeline_config
 
         self.pipeline = dai.Pipeline()
@@ -259,10 +306,8 @@ class SpatialDetectorNode(Node):
         # Define sources and outputs
         self.platform = self.pipeline.getDefaultDevice().getPlatform()
 
-    # Define sources and outputs
-        #size = (cfg['depth_width'], cfg['depth_height'])
-        #self.get_logger().info(f"Configuring pipeline with RGB input size: {cfg['rgb_width']}x{cfg['rgb_height']} and depth input size: {size}")
-        #nn_size = (cfg['rgb_width'], cfg['rgb_height'])
+        # Define sources and outputs
+
 
         size = (640, 400)
 
@@ -288,8 +333,6 @@ class SpatialDetectorNode(Node):
             self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
             raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
 
-
-
         test_w_yolo_v6_nano = True
         if test_w_yolo_v6_nano:
             modelDescription = dai.NNModelDescription("yolov6-nano")
@@ -304,15 +347,23 @@ class SpatialDetectorNode(Node):
 
             spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork)
 
-            #nn_size = (cfg['rgb_width'], cfg['rgb_height'])
-            nn_size = (416, 416)
-            
-            # ImageAlign node aligns RGB to depth frame for proper spatial coordinate transformation
-            imgAlign = self.pipeline.create(dai.node.ImageAlign)
-            camRgb.requestOutput(nn_size).link(imgAlign.inputImage)
-            depthSource.depth.link(imgAlign.inputAlignTo)
-            imgAlign.aligned.link(spatial_det_net.input)
-            
+            # Uitleg van deze koppeling:
+            # 1) nn_size moet exact overeenkomen met het model-inputformaat uit de JSON
+            #    (bijv. 416x416). Als de camera minder of andere bytes levert dan verwacht,
+            #    krijg je runtime-fouten zoals:
+            #    "Input tensor ... exceeds available data range" en dan wordt inferentie
+            #    overgeslagen.
+            # 2) camRgb.requestOutput(nn_size) dwingt de RGB-uitvoer naar het formaat dat
+            #    de Neural Network input daadwerkelijk verwacht.
+            # 3) depthSource.depth -> spatial_det_net.inputDepth is noodzakelijk voor de
+            #    3D-berekening (X, Y, Z). Zonder deze link heb je alleen 2D-detecties.
+            # 4) De depth-resolutie en alignment-instellingen bepalen of spatial mapping
+            #    stabiel blijft. Mismatch tussen RGB/diepte transformaties kan leiden tot
+            #    waarschuwingen over niet-uitgelijnde transformationData.
+
+            nn_size = (cfg['nn_width'], cfg['nn_height']) # 416X416 
+
+            camRgb.requestOutput(nn_size).link(spatial_det_net.input)          
             depthSource.depth.link(spatial_det_net.inputDepth)
 
             spatial_det_net.setBlobPath(cfg['blob_path'])
@@ -384,9 +435,19 @@ class SpatialDetectorNode(Node):
         )
 
     def _mark_pipeline_activity(self):
+        """Markeer het tijdstip van laatst ontvangen pipeline-data.
+
+        De watchdog gebruikt deze timestamp om vastlopers of datastilstand
+        te detecteren en automatisch een restart te triggeren.
+        """
         self._last_data_monotonic = time.monotonic()
 
     def _watchdog_cb(self):
+        """Controleer periodiek of de pipeline nog data produceert.
+
+        Als langer dan data_stall_timeout_sec geen activiteit is gemeten,
+        wordt een gecontroleerde restart uitgevoerd.
+        """
         if not self._pipeline_running:
             return
         elapsed = time.monotonic() - self._last_data_monotonic
@@ -398,7 +459,11 @@ class SpatialDetectorNode(Node):
         self._restart_pipeline()
 
     def _run_pipeline_loop(self):
-        """Run pipeline event loop in background thread."""
+        """Voer pipeline.run() uit in een aparte thread met foutafhandeling.
+
+        Bij onverwachte stop of bekende linkfouten wordt een herstart
+        geprobeerd, zonder direct de volledige ROS node te stoppen.
+        """
         current_thread = threading.current_thread()
         try:
             self.get_logger().info("Pipeline thread started, calling pipeline.run()")
@@ -429,6 +494,7 @@ class SpatialDetectorNode(Node):
 
 
     def _is_link_disconnect_error(self, exc: Exception) -> bool:
+        """Herken fouten die wijzen op USB/X_LINK communicatieproblemen."""
         message = str(exc)
         return any(
             token in message
@@ -442,6 +508,12 @@ class SpatialDetectorNode(Node):
         )
 
     def _restart_pipeline(self):
+        """Voer een veilige pipeline-restart uit met cooldown en limieten.
+
+        De methode voorkomt parallelle restarts, respecteert een maximaal
+        aantal pogingen en kan in degraded mode schakelen bij herhaalde
+        reconnects.
+        """
         if not self._restart_lock.acquire(blocking=False):
             return
 
@@ -516,6 +588,11 @@ class SpatialDetectorNode(Node):
 
 
     def _to_detection_array(self, detections_msg):
+        """Converteer DepthAI-detecties naar depthai_ros_msgs berichttype.
+
+        Bounding boxes worden van genormaliseerde naar pixelcoordinaten
+        omgerekend en XYZ-posities worden van millimeter naar meter gezet.
+        """
         detection_array = SpatialDetectionArray()
         detection_array.header.stamp = self.get_clock().now().to_msg()
         detection_array.header.frame_id = self.frame_id
@@ -549,6 +626,7 @@ class SpatialDetectorNode(Node):
         return detection_array
 
     def destroy_node(self):
+        """Stop pipeline/thread netjes voordat de ROS node wordt afgebroken."""
         self._pipeline_running = False
         if self.pipeline is not None and self.pipeline.isRunning():
             self.pipeline.stop()
@@ -558,6 +636,7 @@ class SpatialDetectorNode(Node):
 
 
 def main():
+    """Entry point: initialiseer ROS, start node en verzorg nette shutdown."""
     rclpy.init()
     node = SpatialDetectorNode()
     try:

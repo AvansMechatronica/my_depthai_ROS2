@@ -1,0 +1,7 @@
+depthai_publisher:
+  ros__parameters:
+    topic_name: camera/rgb
+    width: 640
+    height: 400
+    fps: 30.0
+    queue_size: 4

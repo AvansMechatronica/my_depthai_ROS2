@@ -8,11 +8,27 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description() -> LaunchDescription:
+    # Deze launchfile orkestreert drie onderdelen:
+    # 1) de spatial detector node,
+    # 2) optioneel RViz met vooraf ingestelde visualisatie,
+    # 3) optioneel de URDF/TF boom van de camera.
+    #
+    # Het doel is dat je met een enkele `ros2 launch` meteen een complete
+    # testopstelling krijgt: detectie, beeldvisualisatie en correcte TF-kaders.
+
+    # -----------------------------
+    # Launch-argumenten voor URDF
+    # -----------------------------
+    # start_urdf: laat toe om TF/URDF uit te schakelen als je al een externe
+    # robot_state_publisher gebruikt of alleen de detector wilt testen.
     start_urdf_arg = DeclareLaunchArgument(
         'start_urdf',
         default_value='true',
         description='Start camera URDF/TF publisher launch',
     )
+    # camera_model, tf_prefix en frame-parameters worden doorgegeven naar
+    # my_depthai/launch/urdf_launch.py. Zo kun je dezelfde launchfile gebruiken
+    # in verschillende opstellingen zonder code aan te passen.
     camera_model_arg = DeclareLaunchArgument(
         'camera_model',
         default_value='OAK-D',
@@ -63,11 +79,18 @@ def generate_launch_description() -> LaunchDescription:
         default_value='0.0',
         description='Camera yaw relative to parent frame',
     )
+
+    # -----------------------------
+    # Launch-argumenten voor tools
+    # -----------------------------
+    # start_rviz: handig om headless of CI-runs te doen zonder GUI.
     start_rviz_arg = DeclareLaunchArgument(
         'start_rviz',
         default_value='true',
         description='Start RViz2 alongside the detector node',
     )
+    # rviz_config: standaard wijst dit naar de package-share locatie,
+    # maar kan via CLI worden overschreven met een custom RViz-profiel.
     rviz_config_arg = DeclareLaunchArgument(
         'rviz_config',
         default_value=PathJoinSubstitution(
@@ -75,6 +98,10 @@ def generate_launch_description() -> LaunchDescription:
         ),
         description='Absolute path to the RViz2 configuration file',
     )
+    # params_file bevat alle runtime-instellingen voor de detector
+    # (topics, fps, modelnaam, thresholds, reconnect-policy, ...).
+    # Door dit als launch-argument te exposen kun je snel wisselen tussen
+    # configuratieprofielen zonder Python-code te wijzigen.
     params_file_arg = DeclareLaunchArgument(
         'params_file',
         default_value=PathJoinSubstitution(
@@ -83,6 +110,14 @@ def generate_launch_description() -> LaunchDescription:
         description='Path to YAML file with spatial_detector ROS parameters',
     )
 
+    # -----------------------------
+    # Hoofdnode: spatial detector
+    # -----------------------------
+    # respawn=True zorgt dat de node automatisch herstart bij onverwachte
+    # uitval (bijv. tijdelijke USB/X_LINK problemen). respawn_delay voorkomt
+    # een te agressieve restart-lus.
+    # parameters=[LaunchConfiguration('params_file')] laat ROS2 direct de
+    # YAML-instellingen injecteren bij opstart.
     spatial_detector_node = Node(
         package='my_depthai_python',
         executable='spatial_detector',
@@ -93,6 +128,8 @@ def generate_launch_description() -> LaunchDescription:
         parameters=[LaunchConfiguration('params_file')],
     )
 
+    # RViz wordt conditioneel gestart. Zo blijft dezelfde launch bruikbaar
+    # op systemen zonder display (bijv. SSH/headless edge-device).
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -102,6 +139,9 @@ def generate_launch_description() -> LaunchDescription:
         condition=IfCondition(LaunchConfiguration('start_rviz')),
     )
 
+    # Deze include start de URDF-launch uit het C++ pakket. Alle relevante
+    # frame- en pose-argumenten worden 1-op-1 doorgestuurd zodat de TF-boom
+    # van de camera in RViz en downstream nodes consistent blijft.
     urdf_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
@@ -123,6 +163,14 @@ def generate_launch_description() -> LaunchDescription:
         condition=IfCondition(LaunchConfiguration('start_urdf')),
     )
 
+    # De volgorde in LaunchDescription is bewust expliciet:
+    # 1) eerst alle argumentdeclaraties (zodat overrides bekend zijn),
+    # 2) daarna optionele URDF/TF,
+    # 3) vervolgens de detector,
+    # 4) en tot slot RViz als visuele client.
+    #
+    # In de praktijk mogen sommige acties parallel starten, maar deze
+    # structuur houdt de launchfile leesbaar en onderhoudbaar.
     return LaunchDescription(
         [
             start_urdf_arg,
@@ -141,6 +189,6 @@ def generate_launch_description() -> LaunchDescription:
             params_file_arg,
             urdf_launch,
             spatial_detector_node,
-            #rviz_node,
+            rviz_node,
         ]
     )
