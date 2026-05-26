@@ -4,13 +4,13 @@ spatial_detector:
     depth_topic: stereo/depth
     detections_topic: spatial_detections
 
-    width: 640
-    height: 400
-    fps: 10.0
+    width: 416
+    height: 416
+    fps: 8.0
 
-    queue_size: 2
+    queue_size: 1
     reconnect_cooldown_sec: 2.0
-    max_reconnect_attempts: 20
+    max_reconnect_attempts: 0
 
     pipeline_mode: v3
     depth_source: stereo
@@ -23,5 +23,6 @@ spatial_detector:
     publish_images: true
 
     auto_degrade_on_reconnect: true
-    reconnect_degrade_threshold: 3
-    degraded_fps: 5.0
+    reconnect_degrade_threshold: 2
+    degraded_fps: 3.0
+    data_stall_timeout_sec: 5.0

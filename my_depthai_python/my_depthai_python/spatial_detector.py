@@ -26,7 +26,7 @@ from geometry_msgs.msg import Point
 from vision_msgs.msg import BoundingBox2D, ObjectHypothesis
 from depthai_ros_msgs.msg import SpatialDetection, SpatialDetectionArray
 
-debug = False
+debug = True
 
 def _get_resource_dir() -> Path:
     try:
@@ -56,6 +56,7 @@ class Publisher(dai.node.HostNode):
         conversion_fn,
         show_bounding_boxes=True,
         publish_images=True,
+        on_activity=None,
     ):
         self.image_pub = image_pub
         self.depth_pub = depth_pub
@@ -63,6 +64,7 @@ class Publisher(dai.node.HostNode):
         self.conversion_fn = conversion_fn
         self.show_bounding_boxes = show_bounding_boxes
         self.publish_images = publish_images
+        self.on_activity = on_activity
 
         self.link_args(depth, detections, rgb) # Must match the inputs to the process method
 
@@ -93,6 +95,8 @@ class Publisher(dai.node.HostNode):
                 self.drawDetections(rgbFrame, detection, width, height)
 
         try:
+            if self.on_activity is not None:
+                self.on_activity()
             # In degraded mode we keep detections alive and skip image topics.
             if self.publish_images:
                 self.image_pub.publish(CvBridge().cv2_to_imgmsg(rgbFrame, "bgr8"))
@@ -152,6 +156,7 @@ class SpatialDetectorNode(Node):
         self.declare_parameter('auto_degrade_on_reconnect', True)
         self.declare_parameter('reconnect_degrade_threshold', 3)
         self.declare_parameter('degraded_fps', 5.0)
+        self.declare_parameter('data_stall_timeout_sec', 5.0)
 
         depth_width = int(self.get_parameter('width').value)
         depth_height = int(self.get_parameter('height').value)
@@ -179,6 +184,9 @@ class SpatialDetectorNode(Node):
             self.get_parameter('reconnect_degrade_threshold').value
         )
         degraded_fps = float(self.get_parameter('degraded_fps').value)
+        self.data_stall_timeout_sec = float(
+            self.get_parameter('data_stall_timeout_sec').value
+        )
         image_topic = self.get_parameter('image_topic').value
         depth_topic = self.get_parameter('depth_topic').value
         detections_topic = self.get_parameter('detections_topic').value
@@ -213,6 +221,9 @@ class SpatialDetectorNode(Node):
         self._pipeline_thread = None
         self._pipeline_running = False
         self._degraded_mode = False
+        self._last_data_monotonic = time.monotonic()
+        self._restart_lock = threading.Lock()
+        self._watchdog_timer = self.create_timer(1.0, self._watchdog_cb)
 
         self.pipeline_config = {
             'fps': fps,
@@ -245,10 +256,21 @@ class SpatialDetectorNode(Node):
 
         self.pipeline = dai.Pipeline()
 
+        # Define sources and outputs
+        self.platform = self.pipeline.getDefaultDevice().getPlatform()
+
     # Define sources and outputs
+        #size = (cfg['depth_width'], cfg['depth_height'])
+        #self.get_logger().info(f"Configuring pipeline with RGB input size: {cfg['rgb_width']}x{cfg['rgb_height']} and depth input size: {size}")
+        #nn_size = (cfg['rgb_width'], cfg['rgb_height'])
+
         size = (640, 400)
 
-        camRgb = self.pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=cfg['fps'])
+        camRgb = self.pipeline.create(dai.node.Camera).build(
+            dai.CameraBoardSocket.CAM_A,
+            sensorFps=cfg['fps'],
+        )
+
         monoLeft = self.pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B, sensorFps=cfg['fps'])
         monoRight = self.pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C, sensorFps=cfg['fps'])
         if cfg['depth_source'] == 'stereo':
@@ -266,7 +288,9 @@ class SpatialDetectorNode(Node):
             self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
             raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
 
-        test_w_yolo_v6_nano = False
+
+
+        test_w_yolo_v6_nano = True
         if test_w_yolo_v6_nano:
             modelDescription = dai.NNModelDescription("yolov6-nano")
             spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(
@@ -275,13 +299,24 @@ class SpatialDetectorNode(Node):
             spatial_det_net.input.setBlocking(False)
             spatial_det_net.setDepthLowerThreshold(100)
             spatial_det_net.setDepthUpperThreshold(5000)
-            rgbStream = spatial_det_net.passthrough
-            depthStream = spatial_det_net.passthroughDepth
+
         else:
-            spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(camRgb, depthSource)
+
+            spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork)
+
+            #nn_size = (cfg['rgb_width'], cfg['rgb_height'])
+            nn_size = (416, 416)
+            
+            # ImageAlign node aligns RGB to depth frame for proper spatial coordinate transformation
+            imgAlign = self.pipeline.create(dai.node.ImageAlign)
+            camRgb.requestOutput(nn_size).link(imgAlign.inputImage)
+            depthSource.depth.link(imgAlign.inputAlignTo)
+            imgAlign.aligned.link(spatial_det_net.input)
+            
+            depthSource.depth.link(spatial_det_net.inputDepth)
+
             spatial_det_net.setBlobPath(cfg['blob_path'])
-            #spatial_det_net.input.createInputQueue(camRgb, False)
-            #spatial_det_net.depth.createInputQueue(depthSource, False)
+
             spatial_det_net.input.setBlocking(False)
             spatial_det_net.setConfidenceThreshold(
                 float(cfg['metadata']['confidence_threshold'])
@@ -305,25 +340,30 @@ class SpatialDetectorNode(Node):
             spatial_det_net.detectionParser.setIouThreshold(
                 float(cfg['metadata']['iou_threshold'])
             )
+            if cfg['labels']:
+                spatial_det_net.detectionParser.setClasses(cfg['labels'])
+                spatial_det_net.spatialLocationCalculator.initialConfig.setSegmentationPassthrough(
+                    False
+                )
+            spatial_det_net.setSpatialCalculationAlgorithm(dai.SpatialLocationCalculatorAlgorithm.MIN)
 
-            rgbStream = spatial_det_net.passthrough
-            depthStream = spatial_det_net.passthroughDepth
-
-
-        visualizer = self.pipeline.create(Publisher)
-        visualizer.build(
-            depthStream,
+        self.publisher = self.pipeline.create(Publisher)
+            
+        self.publisher.build(
+            spatial_det_net.passthroughDepth,
             spatial_det_net.out,
-            rgbStream,
+            spatial_det_net.passthrough,
             self.image_pub,
             self.depth_pub,
             self.detection_pub,
             self._to_detection_array,
             cfg['show_bounding_boxes'],
             cfg['publish_images'],
+            self._mark_pipeline_activity,
         )
 
         print("Starting pipeline with depth source: ", cfg['depth_source'])
+        self._last_data_monotonic = time.monotonic()
         self._pipeline_running = True
         
         # Run pipeline in background thread
@@ -338,9 +378,24 @@ class SpatialDetectorNode(Node):
             f"extended_disparity={cfg['stereo_extended_disparity']!r} "
             f"rgb_size={self.width}x{self.height} fps={cfg['fps']} "
             f"publish_images={cfg['publish_images']!r} degraded_mode={self._degraded_mode!r} "
+            f"stall_timeout={self.data_stall_timeout_sec}s "
             f"image->{cfg['image_topic']!r} depth->{cfg['depth_topic']!r} "
             f"detections->{cfg['detections_topic']!r}"
         )
+
+    def _mark_pipeline_activity(self):
+        self._last_data_monotonic = time.monotonic()
+
+    def _watchdog_cb(self):
+        if not self._pipeline_running:
+            return
+        elapsed = time.monotonic() - self._last_data_monotonic
+        if elapsed <= self.data_stall_timeout_sec:
+            return
+        self.get_logger().warn(
+            f'No pipeline data for {elapsed:.1f}s; restarting pipeline.'
+        )
+        self._restart_pipeline()
 
     def _run_pipeline_loop(self):
         """Run pipeline event loop in background thread."""
@@ -387,63 +442,77 @@ class SpatialDetectorNode(Node):
         )
 
     def _restart_pipeline(self):
+        if not self._restart_lock.acquire(blocking=False):
+            return
+
         current_thread = threading.current_thread()
-        now = time.monotonic()
-        if now - self._last_reconnect_attempt < self.reconnect_cooldown_sec:
-            return
+        try:
+            now = time.monotonic()
+            if now - self._last_reconnect_attempt < self.reconnect_cooldown_sec:
+                return
 
-        if (
-            self.max_reconnect_attempts >= 0
-            and self._reconnect_attempts >= self.max_reconnect_attempts
-        ):
-            if not self._reconnect_exhausted_logged:
-                self._reconnect_exhausted_logged = True
-                self.get_logger().error(
-                    'Pipeline reconnect budget exhausted. '
-                    f'Increase max_reconnect_attempts (current={self.max_reconnect_attempts}) '
-                    'or inspect USB/power stability.'
+            if (
+                self.max_reconnect_attempts >= 0
+                and self._reconnect_attempts >= self.max_reconnect_attempts
+            ):
+                if not self._reconnect_exhausted_logged:
+                    self._reconnect_exhausted_logged = True
+                    self.get_logger().error(
+                        'Pipeline reconnect budget exhausted. '
+                        f'Increase max_reconnect_attempts (current={self.max_reconnect_attempts}) '
+                        'or inspect USB/power stability.'
+                    )
+                return
+
+            self._last_reconnect_attempt = now
+            self._reconnect_attempts += 1
+
+            if (
+                self.pipeline_config['auto_degrade_on_reconnect']
+                and not self._degraded_mode
+                and self._reconnect_attempts
+                >= self.pipeline_config['reconnect_degrade_threshold']
+            ):
+                self._degraded_mode = True
+                self.pipeline_config['publish_images'] = False
+                self.pipeline_config['show_bounding_boxes'] = False
+                self.pipeline_config['fps'] = self.pipeline_config['degraded_fps']
+                self.pipeline_config['depth_width'] = min(
+                    self.pipeline_config['depth_width'],
+                    400,
                 )
-            return
+                self.pipeline_config['depth_height'] = min(
+                    self.pipeline_config['depth_height'],
+                    300,
+                )
+                self.get_logger().warn(
+                    'Enabling degraded mode after repeated reconnects: '
+                    f"fps={self.pipeline_config['fps']} depth={self.pipeline_config['depth_width']}x{self.pipeline_config['depth_height']} publish_images=False."
+                )
 
-        self._last_reconnect_attempt = now
-        self._reconnect_attempts += 1
-
-        if (
-            self.pipeline_config['auto_degrade_on_reconnect']
-            and not self._degraded_mode
-            and self._reconnect_attempts
-            >= self.pipeline_config['reconnect_degrade_threshold']
-        ):
-            self._degraded_mode = True
-            self.pipeline_config['publish_images'] = False
-            self.pipeline_config['show_bounding_boxes'] = False
-            self.pipeline_config['fps'] = self.pipeline_config['degraded_fps']
             self.get_logger().warn(
-                'Enabling degraded mode after repeated reconnects: '
-                f"fps={self.pipeline_config['fps']} publish_images=False."
+                f'Restarting DepthAI pipeline after link loss '
+                f'(attempt {self._reconnect_attempts}/{self.max_reconnect_attempts}).'
             )
 
-        self.get_logger().warn(
-            f'Restarting DepthAI pipeline after link loss '
-            f'(attempt {self._reconnect_attempts}/{self.max_reconnect_attempts}).'
-        )
+            try:
+                self._pipeline_running = False
+                if self.pipeline is not None and self.pipeline.isRunning():
+                    self.pipeline.stop()
+                if (
+                    self._pipeline_thread is not None
+                    and self._pipeline_thread is not current_thread
+                ):
+                    self._pipeline_thread.join(timeout=2.0)
+            except Exception:
+                pass
 
-        try:
-            self._pipeline_running = False
-            if self.pipeline is not None and self.pipeline.isRunning():
-                self.pipeline.stop()
-            if (
-                self._pipeline_thread is not None
-                and self._pipeline_thread is not current_thread
-            ):
-                self._pipeline_thread.join(timeout=2.0)
-        except Exception:
-            pass
-
-        try:
-            self._build_and_start_pipeline()
-        except Exception as restart_exc:
-            self.get_logger().error(f'Pipeline restart failed: {restart_exc}')
+            try:
+                self._build_and_start_pipeline()
+            except Exception as restart_exc:
+                self.get_logger().error(f'Pipeline restart failed: {restart_exc}')
+        finally:
+            self._restart_lock.release()
 
 
     def _to_detection_array(self, detections_msg):

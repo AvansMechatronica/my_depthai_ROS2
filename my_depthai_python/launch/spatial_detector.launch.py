@@ -141,6 +141,6 @@ def generate_launch_description() -> LaunchDescription:
             params_file_arg,
             urdf_launch,
             spatial_detector_node,
-            rviz_node,
+            #rviz_node,
         ]
     )
