@@ -1,6 +1,7 @@
 depthai_publisher:
   ros__parameters:
     topic_name: camera/rgb
+    camera_info_topic: camera/camera_info
     width: 640
     height: 400
     fps: 30.0

@@ -58,7 +58,9 @@ setup(
     entry_points={
         'console_scripts': [
             'depthai_template=my_depthai_python.depthai_template:main',
+            'pointcloud_from_images=my_depthai_python.tools.pointcloud_from_images:main',
             'spatial_detector=my_depthai_python.spatial_detector:main',
+            'publisch_tf=my_depthai_python.tools.publisch_tf:main',
         ],
     },
 )

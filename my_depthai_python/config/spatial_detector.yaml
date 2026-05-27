@@ -2,6 +2,8 @@ spatial_detector:
   ros__parameters:
     image_topic: camera/rgb
     depth_topic: stereo/depth
+    depth_raw_topic: stereo/depth_raw
+    camera_info_topic: camera/camera_info
     detections_topic: spatial_detections
 
     width: 416

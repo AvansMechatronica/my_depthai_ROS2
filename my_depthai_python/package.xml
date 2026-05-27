@@ -10,6 +10,7 @@
   <depend>cv_bridge</depend>
   <depend>depthai_ros_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>message_filters</depend>
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
   <depend>vision_msgs</depend>

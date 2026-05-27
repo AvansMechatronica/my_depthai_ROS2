@@ -26,6 +26,11 @@ def generate_launch_description() -> LaunchDescription:
         default_value='camera/rgb',
         description='Output image topic for DepthAI RGB frames',
     )
+    camera_info_topic_arg = DeclareLaunchArgument(
+        'camera_info_topic',
+        default_value='camera/camera_info',
+        description='Output CameraInfo topic for DepthAI RGB frames',
+    )
     # width/height sturen direct de outputresolutie van de hoststream.
     # Kleinere waardes verlagen CPU/bandbreedte, grotere waardes verhogen detail.
     width_arg = DeclareLaunchArgument(
@@ -94,6 +99,7 @@ def generate_launch_description() -> LaunchDescription:
             LaunchConfiguration('params_file'),
             {
                 'topic_name': LaunchConfiguration('topic_name'),
+                'camera_info_topic': LaunchConfiguration('camera_info_topic'),
                 'width': LaunchConfiguration('width'),
                 'height': LaunchConfiguration('height'),
                 'fps': LaunchConfiguration('fps'),
@@ -122,6 +128,7 @@ def generate_launch_description() -> LaunchDescription:
     return LaunchDescription(
         [
             topic_name_arg,
+            camera_info_topic_arg,
             width_arg,
             height_arg,
             fps_arg,

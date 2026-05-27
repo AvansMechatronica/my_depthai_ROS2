@@ -20,13 +20,13 @@ except ImportError as exc:
 import rclpy
 from ament_index_python.packages import PackageNotFoundError, get_package_share_directory
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo, Image
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from vision_msgs.msg import BoundingBox2D, ObjectHypothesis
 from depthai_ros_msgs.msg import SpatialDetection, SpatialDetectionArray
 
-debug = True
+debug = False
 
 def _get_resource_dir() -> Path:
     """Bepaal de map met modelbestanden en configuratiebestanden.
@@ -52,11 +52,48 @@ def _load_network_config(config_path: Path) -> dict:
     with config_path.open('r', encoding='utf-8') as handle:
         return json.load(handle)
 
+
+def _camera_info_from_calibration(calibration_handler, socket, width, height, frame_id):
+    intrinsics = calibration_handler.getCameraIntrinsics(socket, width, height)
+    distortion = calibration_handler.getDistortionCoefficients(socket)
+
+    fx = float(intrinsics[0][0])
+    fy = float(intrinsics[1][1])
+    cx = float(intrinsics[0][2])
+    cy = float(intrinsics[1][2])
+
+    camera_info = CameraInfo()
+    camera_info.header.frame_id = frame_id
+    camera_info.width = int(width)
+    camera_info.height = int(height)
+    camera_info.distortion_model = 'plumb_bob'
+    camera_info.d = [float(value) for value in distortion]
+    camera_info.k = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+    camera_info.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    camera_info.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+    return camera_info
+
+
+def _copy_camera_info(template, stamp, frame_id):
+    camera_info = CameraInfo()
+    camera_info.header.stamp = stamp
+    camera_info.header.frame_id = frame_id
+    camera_info.width = template.width
+    camera_info.height = template.height
+    camera_info.distortion_model = template.distortion_model
+    camera_info.d = list(template.d)
+    camera_info.k = list(template.k)
+    camera_info.r = list(template.r)
+    camera_info.p = list(template.p)
+    return camera_info
+
+
 class Publisher(dai.node.HostNode):
     def __init__(self):
         """Initialiseer de HostNode die pipeline-uitvoer naar ROS publiceert."""
         dai.node.HostNode.__init__(self)
         self.sendProcessingToPipeline(False)
+        self.bridge = CvBridge()
 
 
     def build(
@@ -67,10 +104,15 @@ class Publisher(dai.node.HostNode):
         image_pub,
         depth_pub,
         detection_pub,
+        camera_info_pub,
+        camera_info_template,
         conversion_fn,
         show_bounding_boxes=True,
         publish_images=True,
+        depth_raw_pub=None,
         on_activity=None,
+        make_stamp=None,
+        frame_id='',
     ):
         """Configureer de hostnode met ingangen, ROS publishers en callbacklogica.
 
@@ -80,10 +122,15 @@ class Publisher(dai.node.HostNode):
         self.image_pub = image_pub
         self.depth_pub = depth_pub
         self.detection_pub = detection_pub
+        self.camera_info_pub = camera_info_pub
+        self.camera_info_template = camera_info_template
         self.conversion_fn = conversion_fn
         self.show_bounding_boxes = show_bounding_boxes
         self.publish_images = publish_images
+        self.depth_raw_pub = depth_raw_pub
         self.on_activity = on_activity
+        self.make_stamp = make_stamp
+        self.frame_id = frame_id
 
         self.link_args(depth, detections, rgb) # Must match the inputs to the process method
 
@@ -94,11 +141,13 @@ class Publisher(dai.node.HostNode):
         omgezet, waarna visualisatie en ROS-publicatie in een centrale
         routine plaatsvinden.
         """
+        #print("Publisher.process called with new data batch", flush=True)
         try:
             depthPreview = depthPreview.getCvFrame()
             rgbPreview = rgbPreview.getCvFrame()
             depthFrameColor = self.processDepthFrame(depthPreview)
-            self.publishResults(rgbPreview, depthFrameColor, detections.detections)
+            # Pass both colorized (depthFrameColor) and raw (depthPreview) depth frames
+            self.publishResults(rgbPreview, depthFrameColor, depthPreview, detections.detections)
         except Exception as e:
             print(f"Error in Publisher.process: {e}", flush=True)
 
@@ -117,11 +166,14 @@ class Publisher(dai.node.HostNode):
         depthFrameColor = np.interp(depthFrame, (minDepth, maxDepth), (0, 255)).astype(np.uint8)
         return cv2.applyColorMap(depthFrameColor, cv2.COLORMAP_HOT)
 
-    def publishResults(self, rgbFrame, depthFrameColor, detections):
+    def publishResults(self, rgbFrame, depthFrameColor, depthFrame, detections):
         """Teken detecties, publiceer ROS-berichten en werk activiteitsstatus bij.
 
         In degraded mode kunnen beeldtopics worden overgeslagen, terwijl
         detecties wel gepubliceerd blijven voor downstream nodes.
+        
+        depthFrame: raw depth data (uint16 millimeters) for metric depth
+        depthFrameColor: colorized depth visualization (BGR8)
         """
         height, width, _ = rgbFrame.shape
         if self.publish_images and self.show_bounding_boxes:
@@ -132,10 +184,43 @@ class Publisher(dai.node.HostNode):
         try:
             if self.on_activity is not None:
                 self.on_activity()
+            stamp = self.make_stamp() if self.make_stamp is not None else None
             # In degraded mode we keep detections alive and skip image topics.
             if self.publish_images:
-                self.image_pub.publish(CvBridge().cv2_to_imgmsg(rgbFrame, "bgr8"))
-                self.depth_pub.publish(CvBridge().cv2_to_imgmsg(depthFrameColor, "bgr8"))
+                image_msg = self.bridge.cv2_to_imgmsg(rgbFrame, "bgr8")
+                depth_msg = self.bridge.cv2_to_imgmsg(depthFrameColor, "bgr8")
+                if stamp is not None:
+                    image_msg.header.stamp = stamp
+                    depth_msg.header.stamp = stamp
+                if self.frame_id:
+                    image_msg.header.frame_id = self.frame_id
+                    depth_msg.header.frame_id = self.frame_id
+                self.image_pub.publish(image_msg)
+                self.depth_pub.publish(depth_msg)
+                # Publish raw metric depth if available
+                if self.depth_raw_pub is not None and depthFrame is not None:
+                    try:
+                        # Ensure depthFrame is uint16 (millimeters)
+                        if depthFrame.dtype != np.uint16:
+                            depth_raw = depthFrame.astype(np.uint16)
+                        else:
+                            depth_raw = depthFrame
+                        depth_raw_msg = self.bridge.cv2_to_imgmsg(depth_raw, "mono16")
+                        if stamp is not None:
+                            depth_raw_msg.header.stamp = stamp
+                        if self.frame_id:
+                            depth_raw_msg.header.frame_id = self.frame_id
+                        self.depth_raw_pub.publish(depth_raw_msg)
+                    except Exception as e:
+                        print(f"Error publishing raw depth: {e}", flush=True)
+                if (
+                    self.camera_info_pub is not None
+                    and self.camera_info_template is not None
+                    and stamp is not None
+                ):
+                    self.camera_info_pub.publish(
+                        _copy_camera_info(self.camera_info_template, stamp, self.frame_id)
+                    )
             self.detection_pub.publish(self.conversion_fn(detections))
             if debug and self.publish_images:
                 cv2.imshow("Depth frame", depthFrameColor)
@@ -181,6 +266,8 @@ class SpatialDetectorNode(Node):
 
         self.declare_parameter('image_topic', 'camera/rgb')
         self.declare_parameter('depth_topic', 'stereo/depth')
+        self.declare_parameter('depth_raw_topic', 'stereo/depth_raw')
+        self.declare_parameter('camera_info_topic', 'camera/camera_info')
         self.declare_parameter('detections_topic', 'spatial_detections')
         self.declare_parameter('width', 640)
         self.declare_parameter('height', 400)
@@ -231,6 +318,8 @@ class SpatialDetectorNode(Node):
         )
         image_topic = self.get_parameter('image_topic').value
         depth_topic = self.get_parameter('depth_topic').value
+        depth_raw_topic = self.get_parameter('depth_raw_topic').value
+        camera_info_topic = self.get_parameter('camera_info_topic').value
         detections_topic = self.get_parameter('detections_topic').value
         self.frame_id = 'oak_rgb_camera_optical_frame'
 
@@ -252,9 +341,12 @@ class SpatialDetectorNode(Node):
 
         self.image_pub = self.create_publisher(Image, image_topic, 10)
         self.depth_pub = self.create_publisher(Image, depth_topic, 10)
+        self.depth_raw_pub = self.create_publisher(Image, depth_raw_topic, 10)
+        self.camera_info_pub = self.create_publisher(CameraInfo, camera_info_topic, 10)
         self.detection_pub = self.create_publisher(
             SpatialDetectionArray, detections_topic, 10
         )
+        self.camera_info_template = None
 
         self.pipeline = None
         self._reconnect_attempts = 0
@@ -288,6 +380,8 @@ class SpatialDetectorNode(Node):
             'degraded_fps': degraded_fps,
             'image_topic': image_topic,
             'depth_topic': depth_topic,
+            'depth_raw_topic': depth_raw_topic,
+            'camera_info_topic': camera_info_topic,
             'detections_topic': detections_topic,
         }
 
@@ -304,7 +398,20 @@ class SpatialDetectorNode(Node):
         self.pipeline = dai.Pipeline()
 
         # Define sources and outputs
-        self.platform = self.pipeline.getDefaultDevice().getPlatform()
+        default_device = self.pipeline.getDefaultDevice()
+        self.platform = default_device.getPlatform()
+        try:
+            calibration_handler = default_device.readCalibration()
+            self.camera_info_template = _camera_info_from_calibration(
+                calibration_handler,
+                dai.CameraBoardSocket.CAM_A,
+                self.width,
+                self.height,
+                self.frame_id,
+            )
+        except Exception as exc:
+            self.camera_info_template = None
+            self.get_logger().warn(f'Unable to load RGB calibration for CameraInfo: {exc}')
 
         # Define sources and outputs
 
@@ -333,7 +440,7 @@ class SpatialDetectorNode(Node):
             self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
             raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
 
-        test_w_yolo_v6_nano = True
+        test_w_yolo_v6_nano = False # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
         if test_w_yolo_v6_nano:
             modelDescription = dai.NNModelDescription("yolov6-nano")
             spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(
@@ -362,8 +469,15 @@ class SpatialDetectorNode(Node):
             #    waarschuwingen over niet-uitgelijnde transformationData.
 
             nn_size = (cfg['nn_width'], cfg['nn_height']) # 416X416 
+            nn_size = (416, 416) # For testing with yolov6-nano, which has fixed input size in the blob
+            frame_type = (
+                dai.ImgFrame.Type.BGR888i
+                if self.platform == dai.Platform.RVC4
+                else dai.ImgFrame.Type.BGR888p
+            )
 
-            camRgb.requestOutput(nn_size).link(spatial_det_net.input)          
+            camRgb.requestOutput(nn_size, type=frame_type).link(spatial_det_net.input)
+            #camRgb.requestOutput(nn_size).link(spatial_det_net.input)          
             depthSource.depth.link(spatial_det_net.inputDepth)
 
             spatial_det_net.setBlobPath(cfg['blob_path'])
@@ -407,10 +521,15 @@ class SpatialDetectorNode(Node):
             self.image_pub,
             self.depth_pub,
             self.detection_pub,
+            self.camera_info_pub,
+            self.camera_info_template,
             self._to_detection_array,
-            cfg['show_bounding_boxes'],
-            cfg['publish_images'],
-            self._mark_pipeline_activity,
+            show_bounding_boxes=cfg['show_bounding_boxes'],
+            publish_images=cfg['publish_images'],
+            depth_raw_pub=self.depth_raw_pub,
+            on_activity=self._mark_pipeline_activity,
+            make_stamp=self.get_clock().now().to_msg,
+            frame_id=self.frame_id,
         )
 
         print("Starting pipeline with depth source: ", cfg['depth_source'])
@@ -430,7 +549,8 @@ class SpatialDetectorNode(Node):
             f"rgb_size={self.width}x{self.height} fps={cfg['fps']} "
             f"publish_images={cfg['publish_images']!r} degraded_mode={self._degraded_mode!r} "
             f"stall_timeout={self.data_stall_timeout_sec}s "
-            f"image->{cfg['image_topic']!r} depth->{cfg['depth_topic']!r} "
+            f"image->{cfg['image_topic']!r} depth->{cfg['depth_topic']!r} depth_raw->{cfg['depth_raw_topic']!r} "
+            f"camera_info->{cfg['camera_info_topic']!r} "
             f"detections->{cfg['detections_topic']!r}"
         )
 
