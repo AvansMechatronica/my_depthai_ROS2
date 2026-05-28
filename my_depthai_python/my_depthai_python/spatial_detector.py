@@ -443,7 +443,7 @@ class SpatialDetectorNode(Node):
             self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
             raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
 
-        test_w_yolo_v6_nano = False # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
+        test_w_yolo_v6_nano = True # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
         if test_w_yolo_v6_nano:
             modelDescription = dai.NNModelDescription("yolov6-nano")
             spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(

@@ -4,7 +4,7 @@ Je kunt ook een eigen aangepaste applicatie maken voor de Luxonis DepthAI hardwa
 
 ## Stappen om een aangepaste applicatie te maken
 
-* Gebruik onderstaande tamplate als basis voor jouw aangepaste applicatie, of maak een geheel nieuwe applicatie.
+* Gebruik onderstaande voorbeelden als basis voor jouw aangepaste applicatie, of maak een geheel nieuwe applicatie.
 
 * Kies een voorbeeldprogramma van Luxonis, welke het beste past bij jou vraagstuk
   * [Depthai Examples](https://docs.luxonis.com/software-v3/depthai/examples/)
@@ -23,38 +23,17 @@ Bestudeer de Luxonis documentatie goed, zodat je weet welke functionaliteiten er
 Deze applicatie publiceert RGB-beelden van een OAK-camera op een ROS2 topic. Deze template kan worden gebruikt als basis voor het maken van een aangepaste applicatie die gebruikmaakt van de DepthAI hardware.
 
 ```bash
-ros2 run my_depthai_python depthai_template
+ros2 launch my_depthai_python depthai_template.launch.py
 ```
 
-### Stabiele installatie (zonder system-pip)
-Gebruik een virtual environment en bouw de package in diezelfde environment. Dan krijgt de gegenereerde `ros2 run` entrypoint automatisch de juiste Python interpreter.
-
-```bash
-cd ~/my_depthai_ws/src/my_depthai_ROS2
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-
-# DepthAI python dependency
-python -m pip install depthai
-
-cd ~/my_depthai_ws
-source /opt/ros/jazzy/setup.bash
-colcon build --packages-select my_depthai_python
-source install/setup.bash
-ros2 run my_depthai_python depthai_template
-```
 
 ### Optionele parameters
-- `topic_name` (default: `camera/rgb`)
-- `width` (default: `640`)
-- `height` (default: `400`)
-- `fps` (default: `30.0`)
-- `queue_size` (default: `4`)
+De parametsers van deze applicatie kunnen worden aangepast in het `depthai_template.yaml` bestand in de `config` map van de `my_depthai_python` package. De volgende parameters kunnen worden aangepast:
 
-Voorbeeld:
-
-```bash
-ros2 run my_depthai_python depthai_template --ros-args -p topic_name:=camera/rgb_fast -p fps:=20.0
-```
+    topic_name: camera/rgb
+    camera_info_topic: camera/camera_info
+    width: 640
+    height: 400
+    fps: 30.0
+    queue_size: 4
 
