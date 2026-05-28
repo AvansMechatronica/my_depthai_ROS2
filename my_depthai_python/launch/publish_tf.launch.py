@@ -1,12 +1,8 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription, launch_description_sources
-from launch.actions import IncludeLaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch import LaunchDescription
 import launch_ros.actions
-import launch_ros.descriptions
 
 
 def generate_launch_description():
@@ -17,30 +13,14 @@ def generate_launch_description():
     print('Default resources path..............')
     print(default_resources_path)
 
+    config_path = os.path.join(depthai_examples_path, 'config', 'publish_tf.yaml')
 
-    nnConfig           = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV5.json")
-    resourceBaseFolder = LaunchConfiguration('resourceBaseFolder', default = default_resources_path)
-
-    declare_nnConfig_cmd = DeclareLaunchArgument(
-        'nnConfig',
-        default_value=nnConfig,
-        description='Path to the object detection blob-configuration needed for detection')
-    
-    declare_resourceBaseFolder_cmd = DeclareLaunchArgument(
-        'resourceBaseFolder',
-        default_value=resourceBaseFolder,
-        description='Path to the resources folder which contains the default blobs for the network')
-    
-  
     publisch_tf_node = launch_ros.actions.Node(
             package='my_depthai_python', executable='publisch_tf',
             output='screen',
-            parameters=[{'nnConfig': nnConfig},
-                        {'resourceBaseFolder': resourceBaseFolder}])
+            parameters=[config_path])
 
     ld = LaunchDescription()
-    ld.add_action(declare_nnConfig_cmd)
-    ld.add_action(declare_resourceBaseFolder_cmd)
     ld.add_action(publisch_tf_node)
     return ld
 

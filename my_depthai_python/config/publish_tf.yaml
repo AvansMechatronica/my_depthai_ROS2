@@ -1,0 +1,8 @@
+publisch_tf:
+  ros__parameters:
+    nnConfig: SimpleFruitsYoloV5.json
+    resourceBaseFolder: resources
+    detections_topic: color/yolov4_spatial_detections
+    marker_topic: color/ObjectText
+    frame_id: oak_rgb_camera_optical_frame
+    marker_lifetime_sec: 10.0

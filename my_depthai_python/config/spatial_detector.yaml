@@ -28,3 +28,5 @@ spatial_detector:
     reconnect_degrade_threshold: 2
     degraded_fps: 3.0
     data_stall_timeout_sec: 5.0
+
+    spatial_calc_algorithm: MIN

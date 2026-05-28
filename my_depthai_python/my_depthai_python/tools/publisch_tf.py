@@ -21,12 +21,22 @@ class Publisch_TF(Node):
     def __init__(self):
         super().__init__('my_subscriber')
 
-        self.declare_parameter("resourceBaseFolder", "");
+        self.declare_parameter("resourceBaseFolder", "")
+        self.declare_parameter("nnConfig", "")
+        self.declare_parameter("detections_topic", "color/yolov4_spatial_detections")
+        self.declare_parameter("marker_topic", "color/ObjectText")
+        self.declare_parameter("frame_id", "oak_rgb_camera_optical_frame")
+        self.declare_parameter("marker_lifetime_sec", 10.0)
+
         path = self.get_parameter("resourceBaseFolder").get_parameter_value().string_value
         print(path)
-        self.declare_parameter("nnConfig", "");
         nnConfig = self.get_parameter("nnConfig").get_parameter_value().string_value
         print(nnConfig)
+
+        self.detections_topic = self.get_parameter("detections_topic").get_parameter_value().string_value
+        self.marker_topic = self.get_parameter("marker_topic").get_parameter_value().string_value
+        self.frame_id = self.get_parameter("frame_id").get_parameter_value().string_value
+        self.marker_lifetime_sec = self.get_parameter("marker_lifetime_sec").get_parameter_value().double_value
         nnConfigPath = path + '/' + nnConfig
         print(nnConfigPath)
         # Opening JSON file
@@ -54,14 +64,14 @@ class Publisch_TF(Node):
 
         self.subSpatialDetection = self.create_subscription(
             SpatialDetectionArray,
-            'color/yolov4_spatial_detections',
+            self.detections_topic,
             self.spatial_dections_callback,
             10)
         self.subSpatialDetection  # prevent unused variable warning
 
         # Initialize the transform broadcaster
         self.tf_broadcaster = TransformBroadcaster(self)
-        self.pubTextMarker = self.create_publisher(Marker, 'color/ObjectText', 10)
+        self.pubTextMarker = self.create_publisher(Marker, self.marker_topic, 10)
 
     def spatial_dections_callback(self, spatial_detection_array_msg):
         for label in self.labels:
@@ -87,7 +97,7 @@ class Publisch_TF(Node):
             # Read message content and assign it to
             # corresponding tf variables
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = 'oak_rgb_camera_optical_frame' 
+            t.header.frame_id = self.frame_id 
             t.child_frame_id = child_frame_id#self.labels[int(detectionID)]
 
             # Turtle only exists in 2D, thus we get x and y translation
@@ -118,7 +128,7 @@ class Publisch_TF(Node):
             text_marker.scale.x = text_marker.scale.y = text_marker.scale.z = 0.1#0.06
             text_marker.color.r = text_marker.color.g = text_marker.color.b = text_marker.color.a = 1.0
             text_marker.text = child_frame_id
-            text_marker.lifetime = Duration(seconds=10.0).to_msg()
+            text_marker.lifetime = Duration(seconds=self.marker_lifetime_sec).to_msg()
             self.pubTextMarker.publish(text_marker)   
 
 def main(args=None):

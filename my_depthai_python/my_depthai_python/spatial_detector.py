@@ -286,6 +286,7 @@ class SpatialDetectorNode(Node):
         self.declare_parameter('reconnect_degrade_threshold', 3)
         self.declare_parameter('degraded_fps', 5.0)
         self.declare_parameter('data_stall_timeout_sec', 5.0)
+        self.declare_parameter('spatial_calc_algorithm', 'MIN')
 
         depth_width = int(self.get_parameter('width').value)
         depth_height = int(self.get_parameter('height').value)
@@ -316,6 +317,7 @@ class SpatialDetectorNode(Node):
         self.data_stall_timeout_sec = float(
             self.get_parameter('data_stall_timeout_sec').value
         )
+        spatial_calc_algorithm = self.get_parameter('spatial_calc_algorithm').value
         image_topic = self.get_parameter('image_topic').value
         depth_topic = self.get_parameter('depth_topic').value
         depth_raw_topic = self.get_parameter('depth_raw_topic').value
@@ -383,6 +385,7 @@ class SpatialDetectorNode(Node):
             'depth_raw_topic': depth_raw_topic,
             'camera_info_topic': camera_info_topic,
             'detections_topic': detections_topic,
+            'spatial_calc_algorithm': spatial_calc_algorithm,
         }
 
         self._build_and_start_pipeline()
@@ -509,7 +512,16 @@ class SpatialDetectorNode(Node):
                 spatial_det_net.spatialLocationCalculator.initialConfig.setSegmentationPassthrough(
                     False
                 )
-            spatial_det_net.setSpatialCalculationAlgorithm(dai.SpatialLocationCalculatorAlgorithm.MIN)
+            # Map algorithm string to enum
+            algo_str = cfg['spatial_calc_algorithm'].upper()
+            if hasattr(dai.SpatialLocationCalculatorAlgorithm, algo_str):
+                algo = getattr(dai.SpatialLocationCalculatorAlgorithm, algo_str)
+            else:
+                self.get_logger().warn(
+                    f'Unknown spatial_calc_algorithm {algo_str!r}, using MIN'
+                )
+                algo = dai.SpatialLocationCalculatorAlgorithm.MIN
+            spatial_det_net.setSpatialCalculationAlgorithm(algo)
 
         self.publisher = self.pipeline.create(Publisher)
             
@@ -546,6 +558,7 @@ class SpatialDetectorNode(Node):
             f"config={cfg['config_name']!r} depth={cfg['depth_source']!r} "
             f"extended_disparity={cfg['stereo_extended_disparity']!r} "
             f"rgb_size={self.width}x{self.height} fps={cfg['fps']} "
+            f"spatial_calc_algorithm={cfg['spatial_calc_algorithm']!r} "
             f"publish_images={cfg['publish_images']!r} degraded_mode={self._degraded_mode!r} "
             f"stall_timeout={self.data_stall_timeout_sec}s "
             f"image->{cfg['image_topic']!r} depth->{cfg['depth_topic']!r} depth_raw->{cfg['depth_raw_topic']!r} "
