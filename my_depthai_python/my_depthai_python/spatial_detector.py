@@ -416,7 +416,7 @@ class SpatialDetectorNode(Node):
         # Define sources and outputs
 
 
-        size = (640, 400)
+        size = (416, 416)
 
         camRgb = self.pipeline.create(dai.node.Camera).build(
             dai.CameraBoardSocket.CAM_A,
@@ -468,8 +468,7 @@ class SpatialDetectorNode(Node):
             #    stabiel blijft. Mismatch tussen RGB/diepte transformaties kan leiden tot
             #    waarschuwingen over niet-uitgelijnde transformationData.
 
-            nn_size = (cfg['nn_width'], cfg['nn_height']) # 416X416 
-            nn_size = (416, 416) # For testing with yolov6-nano, which has fixed input size in the blob
+            nn_size = (cfg['nn_width'], cfg['nn_height'])
             frame_type = (
                 dai.ImgFrame.Type.BGR888i
                 if self.platform == dai.Platform.RVC4
