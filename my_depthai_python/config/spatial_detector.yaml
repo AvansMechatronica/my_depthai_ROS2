@@ -6,8 +6,8 @@ spatial_detector:
     camera_info_topic: camera/camera_info
     detections_topic: spatial_detections
 
-    width: 416
-    height: 416
+    width: 512
+    height: 384
     fps: 8.0
 
     queue_size: 1
@@ -20,6 +20,7 @@ spatial_detector:
 
     blob_name: SimpleFruitsYoloV8.blob
     config_name: SimpleFruitsYoloV8.json
+    nn_archive: SimpleFruitsYoloV8.rvc2.tar.xz
 
     show_bounding_boxes: true
     publish_images: true

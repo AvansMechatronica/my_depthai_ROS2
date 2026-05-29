@@ -1,12 +1,12 @@
 {
     "model": {
-        "xml": "SimpleFruitsYoloV8.xml",
-        "bin": "SimpleFruitsYoloV8.bin"
+        "xml": "best.xml",
+        "bin": "best.bin"
     },
     "nn_config": {
         "output_format": "detection",
         "NN_family": "YOLO",
-        "input_size": "512x384",
+        "input_size": "640x640",
         "NN_specific_metadata": {
             "classes": 3,
             "coordinates": 4,
