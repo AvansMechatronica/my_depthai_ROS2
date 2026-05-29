@@ -26,7 +26,9 @@ from geometry_msgs.msg import Point
 from vision_msgs.msg import BoundingBox2D, ObjectHypothesis
 from depthai_ros_msgs.msg import SpatialDetection, SpatialDetectionArray
 
-debug = False
+debug = False # For display results in OpenCV windows and print debug info. Set to False for headless operation and CI testing.
+test_w_yolo_v6_nano = True # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
+
 
 def _get_resource_dir() -> Path:
     """Bepaal de map met modelbestanden en configuratiebestanden.
@@ -178,7 +180,6 @@ class Publisher(dai.node.HostNode):
         height, width, _ = rgbFrame.shape
         if self.publish_images and self.show_bounding_boxes:
             for detection in detections:
-                self.drawBoundingBoxes(depthFrameColor, detection)
                 self.drawDetections(rgbFrame, detection, width, height)
 
         try:
@@ -272,10 +273,8 @@ class SpatialDetectorNode(Node):
         self.declare_parameter('width', 640)
         self.declare_parameter('height', 400)
         self.declare_parameter('fps', 20.0)
-        self.declare_parameter('queue_size', 4)
         self.declare_parameter('reconnect_cooldown_sec', 2.0)
         self.declare_parameter('max_reconnect_attempts', 20)
-        self.declare_parameter('pipeline_mode', 'v3')
         self.declare_parameter('depth_source', 'stereo')
         self.declare_parameter('stereo_extended_disparity', False)
         self.declare_parameter('nn_archive', '')
@@ -290,14 +289,12 @@ class SpatialDetectorNode(Node):
         depth_width = int(self.get_parameter('width').value)
         depth_height = int(self.get_parameter('height').value)
         fps = float(self.get_parameter('fps').value)
-        self.queue_size = int(self.get_parameter('queue_size').value)
         self.reconnect_cooldown_sec = float(
             self.get_parameter('reconnect_cooldown_sec').value
         )
         self.max_reconnect_attempts = int(
             self.get_parameter('max_reconnect_attempts').value
         )
-        pipeline_mode = self.get_parameter('pipeline_mode').value
         depth_source = self.get_parameter('depth_source').value
         stereo_extended_disparity = bool(
             self.get_parameter('stereo_extended_disparity').value
@@ -356,7 +353,6 @@ class SpatialDetectorNode(Node):
 
         self.pipeline_config = {
             'fps': fps,
-            'pipeline_mode': pipeline_mode,
             'depth_width': depth_width,
             'depth_height': depth_height,
             'depth_source': depth_source,
@@ -434,7 +430,6 @@ class SpatialDetectorNode(Node):
             self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
             raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
 
-        test_w_yolo_v6_nano = True # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
         if test_w_yolo_v6_nano:
             modelDescription = dai.NNModelDescription("yolov6-nano")
             spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(
@@ -493,7 +488,7 @@ class SpatialDetectorNode(Node):
         self._reconnect_attempts = 0
         self._reconnect_exhausted_logged = False
         self.get_logger().info(
-            f"SpatialDetector started - mode={cfg['pipeline_mode']!r} nn_archive={cfg['nn_archive_path'].name!r} "
+            f"SpatialDetector started - nn_archive={cfg['nn_archive_path'].name!r} "
             f"depth={cfg['depth_source']!r} "
             f"extended_disparity={cfg['stereo_extended_disparity']!r} "
             f"rgb_size={self.width}x{self.height} fps={cfg['fps']} "

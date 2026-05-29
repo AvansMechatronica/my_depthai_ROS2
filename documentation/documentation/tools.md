@@ -25,10 +25,7 @@ door:
     nn_archive: "<my_yolo_network>.rvc2.tar.xz"
 ```
 
-door:
-```yaml
-    nn_archive: "<my_yolo_network>.rvc2.tar.xz"
-```
+
 :::
 
 ## Pointclouds publiceren

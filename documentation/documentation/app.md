@@ -15,28 +15,29 @@ ros2 launch my_depthai_python spatial_detector.launch.py
 
 
 ### Configuratie neuraal netwerk
-Om een eigen netwerk te gebruiken plaats je het blob en json bestand van je netwerk in de `resources` map van de `my_depthai_python` package en modificeer het `spatial_detector.yaml` bestand uit de `config` map van de `my_depthai_python` package.
+Om een eigen netwerk te gebruiken plaats je het `.rvc2.tar.xz` archief van je netwerk in de `resources` map van de `my_depthai_python` package en modificeer het `spatial_detector.yaml` bestand uit de `config` map van de `my_depthai_python` package.
 
-Vervang de volgende regels:
+Vervang de volgende regel:
 ```yaml
-    blob_name: SimpleFruitsYoloV8.blob
-    config_name: SimpleFruitsYoloV8.json
+    nn_archive: SimpleFruitsYoloV8.rvc2.tar.xz
 ```
 
 door:
 ```yaml
-    blob_name: "<my_yolo_network>.blob"
-    config_name: "<my_yolo_network>.json"
+    nn_archive: "<my_yolo_network>.rvc2.tar.xz"
 ```
 
 
 ### Verklaring ROS topics (`ros2 topic list`)
 
-/camera/camera_info
-/camera/rgb
-/camera_description
-/spatial_detections
-/stereo/depth
+| Topic | Type | Beschrijving |
+|---|---|---|
+| `/camera/rgb` | `sensor_msgs/Image` | RGB-beeld van de kleurencamera (BGR8). |
+| `/camera/camera_info` | `sensor_msgs/CameraInfo` | Intrinsieke cameraparameters (brandpuntsafstand, distortie) behorend bij het RGB-beeld. |
+| `/stereo/depth` | `sensor_msgs/Image` | Gekleurde dieptevisualisatie (BGR8, COLORMAP_HOT) van de stereocamera. |
+| `/stereo/depth_raw` | `sensor_msgs/Image` | Ruwe metrische dieptedata in millimeters (mono16), geschikt voor afstandsberekeningen. |
+| `/spatial_detections` | `depthai_ros_msgs/SpatialDetectionArray` | Gedetecteerde objecten met klasse, confidence, bounding box en 3D-positie (XYZ in meters) t.o.v. de camera. |
+| `/camera_description` | `std_msgs/String` | URDF-beschrijving van de camera, gepubliceerd door de robot_state_publisher (optioneel, alleen bij `start_urdf:=true`). |
 
 
 

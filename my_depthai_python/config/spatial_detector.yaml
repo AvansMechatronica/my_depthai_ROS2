@@ -6,15 +6,14 @@ spatial_detector:
     camera_info_topic: camera/camera_info
     detections_topic: spatial_detections
 
-    width: 512
-    height: 384
+    width: 640  
+    height: 480
     fps: 8.0
 
     queue_size: 1
     reconnect_cooldown_sec: 2.0
     max_reconnect_attempts: 0
 
-    pipeline_mode: v3
     depth_source: stereo
     stereo_extended_disparity: false
 

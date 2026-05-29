@@ -18,7 +18,7 @@ Je kunt ook een eigen script maken met PyTorch, zie: [ultralytics](https://docs.
 ## Conversie van Yolo bestanden naar blob bestanden
 
 
-Na training dient het netwerkbestand `best.pt` geconverteerd te worden naar een tweetal DepthAI compatible bestanden:
+Na training dient het netwerkbestand `best.pt` geconverteerd te worden naar een DepthAI compatible bestanden:
 
 Gebruik hiervoor de [Luxonis Quick Conversion tool](https://docs.luxonis.com/cloud/hubai/quick-conversion/)
 
