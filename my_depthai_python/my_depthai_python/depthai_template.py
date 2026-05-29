@@ -61,7 +61,7 @@ class DepthAIPublisher(Node):
         3) bouwt en start een DepthAI v3 pipeline,
         4) zet een timer op om frames periodiek op te halen en te publiceren.
         """
-        super().__init__('depthai_publisher')
+        super().__init__('depthai_template')
 
         # Parameters zijn bewust als launch/YAML-override beschikbaar,
         # zodat dezelfde code op meerdere camera-opstellingen bruikbaar blijft.

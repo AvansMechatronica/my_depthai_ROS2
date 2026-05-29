@@ -95,7 +95,27 @@ Pas in de juiste launchfile in de `launch` map van de `my_depthai_python` packag
         description='DepthAI camera model used by the URDF',
     )
 ```
-## Kan in het urdf model ook
+## Kan in het urdf-model van de camera ook combineren met mijn eigen robot model?
+ja je kunt de camera URDF combineren met je eigen robot URDF. In dat geval dien je in de launchfile van de camera (bv. `spatial_detector.launch.py`) de `parent_frame` aan te passen naar het frame van de robot waar je de camera aan wilt koppelen.
+
+je start dan de camera-applicatie op zonder dat je RVIZ start.
+```bash
+ros2 launch my_depthai_python spatial_detector.launch.py rviz:=false
+```
+Start je "eigen" robot applicatie met daarin de eigen RVIZ visualisatie. En voeg in de RVIZ-configuratie een `RobotModel` toe met als `Description Topic` het `/camera_description` topic.
+Vergeet niet naderhand de configuratie op te slaan. Je kunt eveneens topics toevoegen die door de camera worden gegenereerd zoals bv.
+
+```
+/camera/rgb
+/camera_description
+```
+
+als je de `pointcloud_from_images` node hebt gestart, dan kun je ook de volgende topics toevoegen:
+```
+/stereo/pointcloud
+```
+
+
 ## Wanneer moet ik `colcon build` gebruiken?
 Het `colcon build --symlink-install` wordt alleen gebruikt voor de volgende situaties:
 * Er zijn bestanden aan een ROS2 package toegevoegd
