@@ -4,10 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
         - /RobotModel1/Description Topic1
-        - /TF1/Frames1
-        - /Grid1
       Splitter Ratio: 0.5833333134651184
     Tree Height: 191
   - Class: rviz_common/Selection
@@ -112,8 +109,24 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        oak-d_frame:
+        link_1:
           Value: false
+        link_2:
+          Value: false
+        link_3:
+          Value: false
+        link_4:
+          Value: false
+        link_5:
+          Value: false
+        link_6:
+          Value: false
+        link_7:
+          Value: false
+        link_8:
+          Value: false
+        oak-d_frame:
+          Value: true
         oak_imu_frame:
           Value: false
         oak_left_camera_frame:
@@ -121,7 +134,7 @@ Visualization Manager:
         oak_left_camera_optical_frame:
           Value: false
         oak_model_origin:
-          Value: true
+          Value: false
         oak_rgb_camera_frame:
           Value: false
         oak_rgb_camera_optical_frame:
@@ -139,6 +152,15 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
+          link_1:
+            link_2:
+              link_3:
+                link_4:
+                  link_5:
+                    link_6:
+                      link_7:
+                        link_8:
+                          {}
           oak-d_frame:
             oak_imu_frame:
               {}
@@ -159,24 +181,6 @@ Visualization Manager:
       Cell Size: 0.5
       Class: rviz_default_plugins/Grid
       Color: 0; 0; 0
-      Enabled: true
-      Line Style:
-        Line Width: 0.029999999329447746
-        Value: Lines
-      Name: Grid
-      Normal Cell Count: 0
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Plane: XY
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
-      Value: true
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz_default_plugins/Grid
-      Color: 160; 160; 164
       Enabled: true
       Line Style:
         Line Width: 0.029999999329447746
@@ -240,7 +244,7 @@ Visualization Manager:
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 150; 150; 150
+    Background Color: 205; 171; 143
     Fixed Frame: world
     Frame Rate: 30
   Name: root
@@ -257,7 +261,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.184213161468506
+      Distance: 2.526991605758667
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -272,10 +276,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8553981184959412
+      Pitch: 0.5353981256484985
       Target Frame: base_link
       Value: Orbit (rviz_default_plugins)
-      Yaw: 3.6303977966308594
+      Yaw: 3.920397996902466
     Saved:
       - Class: rviz_default_plugins/XYOrbit
         Distance: 157.3519287109375
