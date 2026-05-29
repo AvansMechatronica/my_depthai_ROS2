@@ -26,7 +26,7 @@ from geometry_msgs.msg import Point
 from vision_msgs.msg import BoundingBox2D, ObjectHypothesis
 from depthai_ros_msgs.msg import SpatialDetection, SpatialDetectionArray
 
-debug = True
+debug = False
 
 def _get_resource_dir() -> Path:
     """Bepaal de map met modelbestanden en configuratiebestanden.
@@ -278,8 +278,6 @@ class SpatialDetectorNode(Node):
         self.declare_parameter('pipeline_mode', 'v3')
         self.declare_parameter('depth_source', 'stereo')
         self.declare_parameter('stereo_extended_disparity', False)
-        self.declare_parameter('blob_name', 'SimpleFruitsYoloV5.blob')
-        self.declare_parameter('config_name', 'SimpleFruitsYoloV5.json')
         self.declare_parameter('nn_archive', '')
         self.declare_parameter('show_bounding_boxes', True)
         self.declare_parameter('publish_images', True)
@@ -304,8 +302,6 @@ class SpatialDetectorNode(Node):
         stereo_extended_disparity = bool(
             self.get_parameter('stereo_extended_disparity').value
         )
-        blob_name = self.get_parameter('blob_name').value
-        config_name = self.get_parameter('config_name').value
         nn_archive_name = self.get_parameter('nn_archive').value
         show_bounding_boxes = bool(self.get_parameter('show_bounding_boxes').value)
         publish_images = bool(self.get_parameter('publish_images').value)
@@ -328,23 +324,15 @@ class SpatialDetectorNode(Node):
         self.frame_id = 'oak_rgb_camera_optical_frame'
 
         resource_dir = _get_resource_dir()
-        blob_path = resource_dir / blob_name
-        config_path = resource_dir / config_name
-        nn_archive_path = resource_dir / nn_archive_name if nn_archive_name else None
-        if not blob_path.is_file():
-            raise FileNotFoundError(f'Network blob not found: {blob_path}')
-        if not config_path.is_file():
-            raise FileNotFoundError(f'Network config not found: {config_path}')
-        if nn_archive_path is not None and not nn_archive_path.is_file():
+
+        if not nn_archive_name:
+            raise ValueError('Parameter nn_archive must not be empty')
+        nn_archive_path = resource_dir / nn_archive_name
+        if not nn_archive_path.is_file():
             raise FileNotFoundError(f'NN archive not found: {nn_archive_path}')
 
-        network_config = _load_network_config(config_path)
-        metadata = network_config['nn_config']['NN_specific_metadata']
-        labels = network_config.get('mappings', {}).get('labels', [])
-        input_size = network_config['nn_config']['input_size']
-        nn_width, nn_height = [int(value) for value in input_size.split('x', maxsplit=1)]
-        self.width = nn_width
-        self.height = nn_height
+        self.width = depth_width
+        self.height = depth_height
 
         self.image_pub = self.create_publisher(Image, image_topic, 10)
         self.depth_pub = self.create_publisher(Image, depth_topic, 10)
@@ -369,18 +357,11 @@ class SpatialDetectorNode(Node):
         self.pipeline_config = {
             'fps': fps,
             'pipeline_mode': pipeline_mode,
-            'nn_width': nn_width,
-            'nn_height': nn_height,
             'depth_width': depth_width,
             'depth_height': depth_height,
             'depth_source': depth_source,
             'stereo_extended_disparity': stereo_extended_disparity,
-            'blob_path': blob_path,
             'nn_archive_path': nn_archive_path,
-            'metadata': metadata,
-            'labels': labels,
-            'blob_name': blob_name,
-            'config_name': config_name,
             'show_bounding_boxes': show_bounding_boxes,
             'publish_images': publish_images,
             'auto_degrade_on_reconnect': auto_degrade_on_reconnect,
@@ -449,7 +430,7 @@ class SpatialDetectorNode(Node):
             self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
             raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")
 
-        test_w_yolo_v6_nano = False # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
+        test_w_yolo_v6_nano = True # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
         if test_w_yolo_v6_nano:
             modelDescription = dai.NNModelDescription("yolov6-nano")
             spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(
@@ -460,65 +441,9 @@ class SpatialDetectorNode(Node):
             spatial_det_net.setDepthUpperThreshold(5000)
 
         else:
-            if 1:
-                spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(
+
+            spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork).build(
                 camRgb, depthSource, dai.NNArchive(str(cfg['nn_archive_path'])))
-            else:
-                spatial_det_net = self.pipeline.create(dai.node.SpatialDetectionNetwork)
-
-                # Uitleg van deze koppeling:
-                # 1) nn_size moet exact overeenkomen met het model-inputformaat uit de JSON
-                #    (bijv. 416x416). Als de camera minder of andere bytes levert dan verwacht,
-                #    krijg je runtime-fouten zoals:
-                #    "Input tensor ... exceeds available data range" en dan wordt inferentie
-                #    overgeslagen.
-                # 2) camRgb.requestOutput(nn_size) dwingt de RGB-uitvoer naar het formaat dat
-                #    de Neural Network input daadwerkelijk verwacht.
-                # 3) depthSource.depth -> spatial_det_net.inputDepth is noodzakelijk voor de
-                #    3D-berekening (X, Y, Z). Zonder deze link heb je alleen 2D-detecties.
-                # 4) De depth-resolutie en alignment-instellingen bepalen of spatial mapping
-                #    stabiel blijft. Mismatch tussen RGB/diepte transformaties kan leiden tot
-                #    waarschuwingen over niet-uitgelijnde transformationData.
-
-                nn_size = (cfg['nn_width'], cfg['nn_height'])
-                frame_type = (
-                    dai.ImgFrame.Type.BGR888i
-                    if self.platform == dai.Platform.RVC4
-                    else dai.ImgFrame.Type.BGR888p
-                )
-
-                camRgb.requestOutput(nn_size, type=frame_type).link(spatial_det_net.input)
-                #camRgb.requestOutput(nn_size).link(spatial_det_net.input)          
-                depthSource.depth.link(spatial_det_net.inputDepth)
-
-                spatial_det_net.setBlobPath(cfg['blob_path'])
-
-                spatial_det_net.input.setBlocking(False)
-                spatial_det_net.setConfidenceThreshold(
-                    float(cfg['metadata']['confidence_threshold'])
-                )
-
-                spatial_det_net.detectionParser.setNumClasses(int(cfg['metadata']['classes']))
-                spatial_det_net.detectionParser.setCoordinateSize(
-                    int(cfg['metadata']['coordinates'])
-                )
-                spatial_det_net.detectionParser.setAnchors(
-                    [float(anchor) for anchor in cfg['metadata'].get('anchors', [])]
-                )
-                spatial_det_net.detectionParser.setAnchorMasks(
-                    {
-                        name: [int(index) for index in indices]
-                        for name, indices in cfg['metadata'].get('anchor_masks', {}).items()
-                    }
-                )
-                spatial_det_net.detectionParser.setIouThreshold(
-                    float(cfg['metadata']['iou_threshold'])
-                )
-                if cfg['labels']:
-                    spatial_det_net.detectionParser.setClasses(cfg['labels'])
-                    spatial_det_net.spatialLocationCalculator.initialConfig.setSegmentationPassthrough(
-                        False
-                    )
             spatial_det_net.setBoundingBoxScaleFactor(0.5)
             spatial_det_net.setDepthLowerThreshold(100)
             spatial_det_net.setDepthUpperThreshold(5000)
@@ -564,8 +489,8 @@ class SpatialDetectorNode(Node):
         self._reconnect_attempts = 0
         self._reconnect_exhausted_logged = False
         self.get_logger().info(
-            f"SpatialDetector started - mode={cfg['pipeline_mode']!r} blob={cfg['blob_name']!r} "
-            f"config={cfg['config_name']!r} depth={cfg['depth_source']!r} "
+            f"SpatialDetector started - mode={cfg['pipeline_mode']!r} nn_archive={cfg['nn_archive_path'].name!r} "
+            f"depth={cfg['depth_source']!r} "
             f"extended_disparity={cfg['stereo_extended_disparity']!r} "
             f"rgb_size={self.width}x{self.height} fps={cfg['fps']} "
             f"spatial_calc_algorithm={cfg['spatial_calc_algorithm']!r} "

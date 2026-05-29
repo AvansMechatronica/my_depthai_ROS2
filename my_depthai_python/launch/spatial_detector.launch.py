@@ -145,7 +145,7 @@ def generate_launch_description() -> LaunchDescription:
     urdf_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
-                [FindPackageShare('my_depthai'), 'launch', 'urdf_launch.py']
+                [FindPackageShare('my_depthai_python'), 'launch', 'urdf_launch.py']
             )
         ),
         launch_arguments={

@@ -18,8 +18,6 @@ spatial_detector:
     depth_source: stereo
     stereo_extended_disparity: false
 
-    blob_name: SimpleFruitsYoloV8.blob
-    config_name: SimpleFruitsYoloV8.json
     nn_archive: SimpleFruitsYoloV8.rvc2.tar.xz
 
     show_bounding_boxes: true
