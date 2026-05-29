@@ -1,15 +1,11 @@
 # Veel gestelde vragen
 
-## Kan ik de circel-detector zonder RVIZ-monitor starten?
-Start de applicatie als volgt:
-```bash
-ros2 launch my_depthai stereo_circle_detector.launch.py rviz:=false
-```
+
 
 ## Kan ik de yolo-spatial-detector zonder RVIZ-monitor starten?
 Start de applicatie als volgt:
 ```bash
-ros2 launch my_depthai yolo_spatial_detector_node.launch.py rviz:=false
+ros2 launch my_depthai_python spatial_detector.launch.py rviz:=false
 ```
 
 ## Kan ik het camera URDF-model toevoegen aan mijn eigen robot URDF-model?
@@ -31,29 +27,73 @@ Vergeet niet naderhand de configuratie op te slaan
 :::
 
 ## Kan ik de positie van de camera wijzigen?
-Ja dat kan, pas in de juiste launchfile in de `launch` map van de `my_depthai` package onderstaande regels aan:
+Ja dat kan, pas in de juiste launchfile in de `launch` map van de `my_depthai_python` package onderstaande regels aan:
 
-* `stereo_circle_detector.launch.py`
-* `yolo_spatial_detector_node.launch.py`
+
+* `spatial_detector.launch.py`
 
 ```python
-cam_pos_x = LaunchConfiguration('cam_pos_x',     default = '0.25')
-cam_pos_y = LaunchConfiguration('cam_pos_y',     default = '0.0')
-cam_pos_z = LaunchConfiguration('cam_pos_z',     default = '0.5')
-cam_roll  = LaunchConfiguration('cam_roll',      default = '0.0')
-cam_pitch = LaunchConfiguration('cam_pitch',     default = '0.0')
-cam_yaw   = LaunchConfiguration('cam_yaw',       default = '0.0')
+
+    tf_prefix_arg = DeclareLaunchArgument(
+        'tf_prefix',
+        default_value='oak',
+        description='TF prefix / camera name for URDF frames',
+    )
+    base_frame_arg = DeclareLaunchArgument(
+        'base_frame',
+        default_value='oak-d_frame',
+        description='Base frame name for camera URDF',
+    )
+    parent_frame_arg = DeclareLaunchArgument(
+        'parent_frame',
+        default_value='world',
+        description='Parent frame to attach camera URDF',
+    )
+    cam_pos_x_arg = DeclareLaunchArgument(
+        'cam_pos_x',
+        default_value='0.25',
+        description='Camera X position relative to parent frame',
+    )
+    cam_pos_y_arg = DeclareLaunchArgument(
+        'cam_pos_y',
+        default_value='0.0',
+        description='Camera Y position relative to parent frame',
+    )
+    cam_pos_z_arg = DeclareLaunchArgument(
+        'cam_pos_z',
+        default_value='0.5',
+        description='Camera Z position relative to parent frame',
+    )
+    cam_roll_arg = DeclareLaunchArgument(
+        'cam_roll',
+        default_value='0.0',
+        description='Camera roll relative to parent frame',
+    )
+    cam_pitch_arg = DeclareLaunchArgument(
+        'cam_pitch',
+        default_value='0.0',
+        description='Camera pitch relative to parent frame',
+    )
+    cam_yaw_arg = DeclareLaunchArgument(
+        'cam_yaw',
+        default_value='0.0',
+        description='Camera yaw relative to parent frame',
+    )
+
 ```
-De waarden zijn ten opzichte van het `world` frame.
+De waarden zijn ten opzichte van het `world` frame, maar je kunt ook een referentie leggen naar de eigen robot, b.v. de end-effector van een robotarm. In dat geval dien je `parent_frame` aan te passen naar het frame van de robot waar je de camera aan wilt koppelen.
 
 ## Kan ik ander type camera, dan de `OAK-D` gebruiken
-Pas in de juiste launchfile in de `launch` map van de `my_depthai` package onderstaande regels aan:
+Pas in de juiste launchfile in de `launch` map van de `my_depthai_python` package onderstaande regels aan:
 
-* `stereo_circle_detector.launch.py`
-* `yolo_spatial_detector_node.launch.py`
+* `spatial_detector.launch.py`
 
 ```python
-camera_model = LaunchConfiguration('camera_model',  default = 'OAK-D')
+    camera_model_arg = DeclareLaunchArgument(
+        'camera_model',
+        default_value='OAK-D',
+        description='DepthAI camera model used by the URDF',
+    )
 ```
 ## Kan in het urdf model ook
 ## Wanneer moet ik `colcon build` gebruiken?

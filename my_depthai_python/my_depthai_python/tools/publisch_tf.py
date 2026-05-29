@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import tarfile
 import rclpy
 from rclpy.node import Node
 from rclpy.duration import Duration
+from pathlib import Path
 
 from std_msgs.msg import String
 from depthai_ros_msgs.msg import SpatialDetectionArray
@@ -15,51 +17,60 @@ from tf2_ros import TransformBroadcaster
 from geometry_msgs.msg import TransformStamped
 
 import json
+from ament_index_python.packages import get_package_share_directory, PackageNotFoundError
+
+
+def _get_resource_dir() -> Path:
+    try:
+        return Path(get_package_share_directory('my_depthai_python')) / 'resources'
+    except PackageNotFoundError:
+        return Path(__file__).resolve().parents[2] / 'resources'
+
+
+def _read_labels_from_archive(archive_path: Path) -> list:
+    """Read class labels from config.json inside a .rvc2.tar.xz NNArchive."""
+    with tarfile.open(archive_path, 'r:xz') as tar:
+        config_member = tar.getmember('config.json')
+        with tar.extractfile(config_member) as f:
+            config = json.load(f)
+    heads = config.get('model', {}).get('heads', [])
+    if heads:
+        return heads[0].get('metadata', {}).get('classes', [])
+    return []
 
 class Publisch_TF(Node):
 
     def __init__(self):
-        super().__init__('my_subscriber')
+        super().__init__('publisch_tf')
 
         self.declare_parameter("resourceBaseFolder", "")
-        self.declare_parameter("nnConfig", "")
+        self.declare_parameter("nn_archive", "")
         self.declare_parameter("detections_topic", "color/yolov4_spatial_detections")
         self.declare_parameter("marker_topic", "color/ObjectText")
         self.declare_parameter("frame_id", "oak_rgb_camera_optical_frame")
         self.declare_parameter("marker_lifetime_sec", 10.0)
 
-        path = self.get_parameter("resourceBaseFolder").get_parameter_value().string_value
-        print(path)
-        nnConfig = self.get_parameter("nnConfig").get_parameter_value().string_value
-        print(nnConfig)
+        nn_archive_name = self.get_parameter("nn_archive").get_parameter_value().string_value
 
         self.detections_topic = self.get_parameter("detections_topic").get_parameter_value().string_value
         self.marker_topic = self.get_parameter("marker_topic").get_parameter_value().string_value
         self.frame_id = self.get_parameter("frame_id").get_parameter_value().string_value
         self.marker_lifetime_sec = self.get_parameter("marker_lifetime_sec").get_parameter_value().double_value
-        nnConfigPath = path + '/' + nnConfig
-        print(nnConfigPath)
-        # Opening JSON file
-        f = open(nnConfigPath)
-        
-        # returns JSON object as 
-        # a dictionary
-        data = json.load(f)
-       
-        # Closing file
-        f.close()
 
-        #print(data)
-        mappings = data['mappings']
-        self.labels = mappings['labels']
-        #print(labels)
+        resource_dir = _get_resource_dir()
+        if not nn_archive_name:
+            raise ValueError('Parameter nn_archive must not be empty')
+        nn_archive_path = resource_dir / nn_archive_name
+        if not nn_archive_path.is_file():
+            raise FileNotFoundError(f'NN archive not found: {nn_archive_path}')
 
-        #self.print(labels[0])
-        self.labels_dict = {}
-        for label in self.labels:
-            self.labels_dict[label] = 0
+        # Read class labels from config.json inside the .rvc2.tar.xz NNArchive
+        self.labels = _read_labels_from_archive(nn_archive_path)
+        if not self.labels:
+            raise RuntimeError(f'No labels found in archive: {nn_archive_path}')
 
-        print(self.labels_dict)
+        self.labels_dict = {label: 0 for label in self.labels}
+        self.get_logger().info(f'Loaded labels: {self.labels}')
 
 
         self.subSpatialDetection = self.create_subscription(
@@ -77,33 +88,30 @@ class Publisch_TF(Node):
         for label in self.labels:
             self.labels_dict[label] = 0
         for detection in spatial_detection_array_msg.detections:
-            detectionID = None
+            label_name = None
             score = -1.0
-            label = None
             for result in detection.results:
                 if result.score > score:
-                    detectionID = result.class_id
+                    label_name = result.class_id
                     score = result.score
 
+            if label_name not in self.labels_dict:
+                continue
+
             position = detection.position
-            #label = f'{self.labels[int(detectionID)]}, x: {round(position.x,3)}, y: {round(position.y,3)}, z: {round(position.z,3)}'
-            #print(label)
 
-            t = TransformStamped()
-
-            child_frame_id = self.labels[int(detectionID)] + "_" + str(self.labels_dict[self.labels[int(detectionID)]])
-            self.labels_dict[self.labels[int(detectionID)]] = self.labels_dict[self.labels[int(detectionID)]] + 1
+            child_frame_id = label_name + "_" + str(self.labels_dict[label_name])
+            self.labels_dict[label_name] += 1
 
             # Read message content and assign it to
             # corresponding tf variables
+            t = TransformStamped()
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = self.frame_id 
-            t.child_frame_id = child_frame_id#self.labels[int(detectionID)]
+            t.header.frame_id = self.frame_id
+            t.child_frame_id = child_frame_id
 
-            # Turtle only exists in 2D, thus we get x and y translation
-            # coordinates from the message and set the z coordinate to 0
             t.transform.translation.x = position.x
-            t.transform.translation.y = -position.y # GAH Dit snap ik nog niet
+            t.transform.translation.y = -position.y
             t.transform.translation.z = position.z
 
             # For the same reason, turtle can only rotate around one axis

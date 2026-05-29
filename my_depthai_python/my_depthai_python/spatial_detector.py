@@ -390,6 +390,10 @@ class SpatialDetectorNode(Node):
         # Define sources and outputs
         default_device = self.pipeline.getDefaultDevice()
         self.platform = default_device.getPlatform()
+        self.get_logger().info(f'Device platform: {self.platform}')
+        # print device info for debugging
+        device_info = default_device.getDeviceInfo()
+        self.get_logger().info(f'Device info: {device_info}')
         try:
             calibration_handler = default_device.readCalibration()
             self.camera_info_template = _camera_info_from_calibration(

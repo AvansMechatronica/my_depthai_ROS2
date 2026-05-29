@@ -3,12 +3,7 @@
 
 ## Training
 
-### Yolo V5
-Er is een Colab notebook trainingesmodel beschikbaar.
 
-[Yolo V5 training](https://colab.research.google.com/drive/1g6glENMju05OKoRe5LVrZOE8yrH-ALjX#scrollTo=aRxrsCBzIb1I)
-
-Volg de instructies van het Colab notebook.
 
 ### Yolo V8
 Er is een Colab notebook trainingesmodel beschikbaar.
@@ -25,39 +20,33 @@ Je kunt ook een eigen script maken met PyTorch, zie: [ultralytics](https://docs.
 
 Na training dient het netwerkbestand `best.pt` geconverteerd te worden naar een tweetal DepthAI compatible bestanden:
 
-Gebruik hiervoor de [luxonis conversie tool](https://tools.luxonis.com/)
+Gebruik hiervoor de [Luxonis Quick Conversion tool](https://docs.luxonis.com/cloud/hubai/quick-conversion/)
 
-![image](../images/luxonis-tools.png)
+![image](../images/quick_conversions_tool.png)
 
-Na conversie worden 2 bestanden gegenereerd:
-* `*.blob`: Eigenlijke AI Netwerk, welke in de camera wordt geladen
+Na conversie wordt er een bestand gegenereerd:
+* `<source_file>.rvc2.tar.xz`: Eigenlijke AI Netwerk, welke in de camera kan worden geladen
 
-* `*.json` : bestand met karakteristieke eigenschappen van het `blob` bestand zoals labels van de te detecteren objecten.
 
-Je kunt de namen van de bestanden wijzigen naar nieuwe namen zoals b.v. `<my_yolo_network>.blob` en `<my_yolo_network>.json`
-
-Plaats beide bestanden in de `resource` map van de `my_depthai` package.
+Plaats het bestand in de `resources` map van de `my_depthai_python` package.
 
 ## Uitrollen
 
-Modificeer het `yolo_spatial_detector_node.launch.py` uit de `launch` map van de `my_depthai` package.
+Modificeer het `spatial_detector.yaml` uit de `config` map van de `my_depthai_python` package.
 
-Vervang de volgende regels:
-```python
-nnName = LaunchConfiguration('nnName', default = "SimpleFruitsYoloV8.blob")
-nnConfig = LaunchConfiguration('nnConfig', default = "SimpleFruitsYoloV8.json")
+Vervang de volgende regel:
+```yaml
+    nn_archive: SimpleFruitsYoloV8.rvc2.tar.xz
 ```
 
 door:
-```python
-nnName = LaunchConfiguration('nnName', default = "<my_yolo_network>.blob")
-nnConfig = LaunchConfiguration('nnConfig', default = "<my_yolo_network>.json")
-
+```yaml
+    nn_archive: "<my_yolo_network>.rvc2.tar.xz"
 ```
 
 ## Netwerk testen
 Sluit de DepthAi camera aan op de computer en start de volgende ROS2 applicatie
 
 ```bash
-ros2 launch my_depthai yolo_spatial_detector_node.launch.py
+ros2 launch my_depthai_python spatial_detector.launch.py
 ```

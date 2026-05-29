@@ -1,6 +1,6 @@
-# Installatie van de DepthAI-template
+# Installatie van de DepthAI-repository
 
-Hier wordt beschreven hoe je de template kan verkrijgen, kunt bouwen en tenslotte kunt testen.
+Hier wordt beschreven hoe je de repository kan verkrijgen, kunt bouwen en vervolgens kunt testen.
 
 ## Development computer
 Als in dit document gesproken wordt over een development-computer dan wordt hiermee bedoeld de laptop/computer waarop je de software in ROS2 ontwikkelt.
@@ -37,6 +37,17 @@ Voor het maken van de Depthai ROS2 template maak je gebruik van een Github repos
 
 ::::{tab-set}
 
+:::{tab-item} Zonder GIT-repository support
+
+* Je kunt de workspace als volgt creëren
+```bash
+mkdir -p ~/my_depthai_ws/src
+cd ~/my_depthai_ws/src
+git clone https://github.com/AvansMechatronica/my_depthai_ROS2.git
+```
+
+:::
+
 :::{tab-item} Met GIT-repository support
 
 * Maak een account aan bij [Github](https://github.com/) en login op dit account
@@ -61,16 +72,6 @@ git clone https://github.com/<jouw_account_naam>/my_depthai_ROS2.git
 
 :::
 
-:::{tab-item} Zonder GIT-repository support
-
-* Je kunt de workspace als volgt creëren
-```bash
-mkdir -p ~/my_depthai_ws/src
-cd ~/my_depthai_ws/src
-git clone https://github.com/AvansMechatronica/my_depthai_ROS2.git
-```
-
-:::
 
 ::::
 
@@ -94,27 +95,46 @@ cd ~/my_depthai_ws/src/my_depthai_ROS2/install
 ```
 
 ## Bouwen van de workspace
-> Dit is al gebeurd in de installatie. Wijzig je iets in de workspace dan kun je als volgt bouwen.
+### Maak een virtual pythonen vironment aan
+Gebruik een virtual environment en bouw de package in diezelfde environment. Dan krijgt de gegenereerde `ros2 run/launch` entrypoint automatisch de juiste Python interpreter.
+
+
+
 ```bash
-# Build the workspace
+cd ~/my_depthai_ws/src/my_depthai_ROS2
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+
+# DepthAI python dependency
+python -m pip install depthai
+```
+:::{note}
+Als je al ergens een andere virtual environment hebt, en deze wordt gesourced in een `install/setup.bash` van een andere workspace, dan kun je deze ook gebruiken. Zorg er dan wel voor dat de DepthAI python dependency is geïnstalleerd in diezelfde virtual environment.
+:::
+
+### Bouw de workspace
+```bash
 cd ~/my_depthai_ws
 colcon build --symlink-install
 source install/setup.bash
 ```
 
-Heb je slechts 1 package gewijzigd dan kun je onderstaand commando gebruiken om betreffende package te bouwen.
-
+### Voeg environment toe aan bashrc
+Om de installatie automatisch te sourcen bij het openen van een nieuwe terminal, kun je de volgende regel toevoegen aan je `~/.bashrc` bestand:
 ```bash
-# Build one of the packages in the workspace
-cd ~/my_depthai_ws
-colcon build --symlink-install --packages-select <package_name>
-source install/setup.bash
+source ~/my_depthai_ws/install/setup.bash
+```
+ Je kunt dit met het volgende commando doen:
+```bash
+echo "source ~/my_depthai_ws/install/setup.bash" >> ~/.bashrc
 ```
 
+
 ## Testen van de installatie
-Je kunt de installatie testen door onderstaand commando. Sluit de DepthAi camera aan op de computer en start de volgende ROS2 applicatie.
+Je kunt de installatie testen door onderstaand commando. Sluit de DepthAi camera aan op de computer en start de volgende ROS2 applicatie
 
 ```bash
-ros2 launch my_ur_moveit_config demo.launch.py
+ros2 launch my_depthai_python depthai_template.launch.py
 ```
 
