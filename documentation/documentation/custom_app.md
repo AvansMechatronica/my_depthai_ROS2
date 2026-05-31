@@ -13,6 +13,7 @@ Je kunt ook een eigen aangepaste applicatie maken voor de Luxonis DepthAI hardwa
 * Maak van dit voorbeeld programma een ROS node en test of je de ROS-node kunt starten
 * Voeg aan de ROS-node topics toe die het mogelijk maken om informatie uit jou beelden met andere nodes te delen.
 * Maak eventueel een custom ROS2 message aan.
+* Je kunt gebruik maken van de `depthai_template.py` node die hieronder is beschreven. Maak van dit bestand en aanverwante configuraie en launchfiles een kopie en pas deze aan naar jouw wensen. Je kunt ook een geheel nieuwe node maken, maar de template kan je helpen om snel aan de slag te gaan.
 
 :::{note}
 Bestudeer de Luxonis documentatie goed, zodat je weet welke functionaliteiten er allemaal mogelijk zijn. Er zijn veel voorbeelden beschikbaar die je kunnen helpen bij het maken van jouw aangepaste applicatie. Zie [DepthAI Software](https://docs.luxonis.com/software-v3/) voor meer informatie.
