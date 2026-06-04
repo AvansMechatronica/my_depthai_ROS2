@@ -88,11 +88,12 @@ rosdep update
 rosdep install --ignore-src --from-paths src -y
 ```
 
-
+Installeer ook de algemene DepthAI ROS packages, deze worden gebruikt in de template en zijn nodig voor de werking van de template. Deze worden niet automatisch geïnstalleerd met rosdep, dus deze moet je apart installeren.
 ```bash
-cd ~/my_depthai_ws/src/my_depthai_ROS2/install
-./install
+sudo apt install ros-$ROS_DISTRO-depthai-ros
 ```
+
+
 
 ## Bouwen van de workspace
 ### Maak een virtual pythonen vironment aan
