@@ -26,7 +26,7 @@ It provides a minimal RGB publisher, a spatial object-detection node (YOLOv8 / Y
 | ROS 2 Jazzy (or later) | `rclpy`, `sensor_msgs`, `geometry_msgs`, `vision_msgs` |
 | `depthai >= 3.6.0` | Install in the same Python environment used for `colcon build` |
 | `cv_bridge` | ROS ↔ OpenCV image conversion |
-| `depthai_ros_msgs` | `SpatialDetection` / `SpatialDetectionArray` message types |
+| `my_depthai_interfaces` | `SpatialDetection` / `SpatialDetectionArray` message types |
 | `message_filters` | Time-synchronisation for `pointcloud_from_images` |
 
 > **Important:** `depthai` must be installed for the same Python interpreter that `colcon build` and `ros2 run` use.  
@@ -123,7 +123,7 @@ Includes automatic reconnect logic with optional FPS degradation on repeated rec
 
 | Topic | Type | Description |
 |---|---|---|
-| `spatial_detections` | `depthai_ros_msgs/SpatialDetectionArray` | Detected objects with 3-D positions |
+| `spatial_detections` | `my_depthai_interfaces/SpatialDetectionArray` | Detected objects with 3-D positions |
 | `camera/rgb` | `sensor_msgs/Image` | RGB image (optionally with bounding boxes) |
 | `camera/camera_info` | `sensor_msgs/CameraInfo` | RGB camera intrinsics |
 | `stereo/depth` | `sensor_msgs/Image` | Depth image (32FC1 metres) |
@@ -217,7 +217,7 @@ Class labels are read automatically from the NNArchive `config.json`.
 
 | Topic | Type | Description |
 |---|---|---|
-| `spatial_detections` *(default)* | `depthai_ros_msgs/SpatialDetectionArray` | Input detections |
+| `spatial_detections` *(default)* | `my_depthai_interfaces/SpatialDetectionArray` | Input detections |
 
 **Publishers**
 

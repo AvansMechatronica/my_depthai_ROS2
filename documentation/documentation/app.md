@@ -36,7 +36,7 @@ door:
 | `/camera/camera_info` | `sensor_msgs/CameraInfo` | Intrinsieke cameraparameters (brandpuntsafstand, distortie) behorend bij het RGB-beeld. |
 | `/stereo/depth` | `sensor_msgs/Image` | Gekleurde dieptevisualisatie (BGR8, COLORMAP_HOT) van de stereocamera. |
 | `/stereo/depth_raw` | `sensor_msgs/Image` | Ruwe metrische dieptedata in millimeters (mono16), geschikt voor afstandsberekeningen. |
-| `/spatial_detections` | `depthai_ros_msgs/SpatialDetectionArray` | Gedetecteerde objecten met klasse, confidence, bounding box en 3D-positie (XYZ in meters) t.o.v. de camera. |
+| `/spatial_detections` | `my_depthai_interfaces/SpatialDetectionArray` | Gedetecteerde objecten met klasse, confidence, bounding box en 3D-positie (XYZ in meters) t.o.v. de camera. |
 | `/camera_description` | `std_msgs/String` | URDF-beschrijving van de camera, gepubliceerd door de robot_state_publisher (optioneel, alleen bij `start_urdf:=true`). |
 
 

@@ -6,7 +6,7 @@ from rclpy.duration import Duration
 from pathlib import Path
 
 from std_msgs.msg import String
-from depthai_ros_msgs.msg import SpatialDetectionArray
+from my_depthai_interfaces.msg import SpatialDetectionArray
 
 from visualization_msgs.msg import Marker
 

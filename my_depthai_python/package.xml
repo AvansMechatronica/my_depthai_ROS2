@@ -8,7 +8,7 @@
   <license>TODO: License declaration</license>
 
   <depend>cv_bridge</depend>
-  <depend>depthai_ros_msgs</depend>
+  <depend>my_depthai_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>message_filters</depend>
   <depend>rclpy</depend>

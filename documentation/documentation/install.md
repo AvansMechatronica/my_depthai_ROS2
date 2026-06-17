@@ -6,13 +6,6 @@ Hier wordt beschreven hoe je de repository kan verkrijgen, kunt bouwen en vervol
 Als in dit document gesproken wordt over een development-computer dan wordt hiermee bedoeld de laptop/computer waarop je de software in ROS2 ontwikkelt.
 
 ## Voorbereidingen
-### Installatie van de algemene DepthAI ROS Packages
-
-```bash
-sudo apt install ros-$ROS_DISTRO-depthai-ros
-```
-
-[DepthAI ROS Pagina](https://docs.luxonis.com/software-v3/depthai/ros/)
 
 ### Installeer udev rules voor de camera
 ```bash
@@ -93,13 +86,20 @@ Installeer ook de algemene DepthAI ROS packages, deze worden gebruikt in de temp
 sudo apt install ros-$ROS_DISTRO-depthai-ros
 ```
 
+## Installatie van de DepthAI python dependency
+:::::{card} 
 
+::::{tab-set}
 
-## Bouwen van de workspace
-### Maak een virtual pythonen vironment aan
-Gebruik een virtual environment en bouw de package in diezelfde environment. Dan krijgt de gegenereerde `ros2 run/launch` entrypoint automatisch de juiste Python interpreter.
+:::{tab-item} In system python environment
+```bash
 
+pip install depthai --break-system-packages
+```
 
+:::
+
+:::{tab-item} In virtuele environment
 
 ```bash
 cd ~/my_depthai_ws/src/my_depthai_ROS2
@@ -114,6 +114,15 @@ python -m pip install depthai
 Als je al ergens een andere virtual environment hebt, en deze wordt gesourced in een `install/setup.bash` van een andere workspace, dan kun je deze ook gebruiken. Zorg er dan wel voor dat de DepthAI python dependency is geïnstalleerd in diezelfde virtual environment.
 :::
 
+:::
+
+
+::::
+
+:::::
+
+
+## Bouwen van de workspace
 ### Bouw de workspace
 ```bash
 cd ~/my_depthai_ws

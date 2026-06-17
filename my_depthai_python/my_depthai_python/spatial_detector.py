@@ -24,7 +24,7 @@ from sensor_msgs.msg import CameraInfo, Image
 from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from vision_msgs.msg import BoundingBox2D, ObjectHypothesis
-from depthai_ros_msgs.msg import SpatialDetection, SpatialDetectionArray
+from my_depthai_interfaces.msg import SpatialDetection, SpatialDetectionArray
 
 debug = False # For display results in OpenCV windows and print debug info. Set to False for headless operation and CI testing.
 test_w_yolo_v6_nano = True # Set to True to test with yolov6-nano, which has fixed input size in the blob and different output format (no detectionParser)
@@ -654,7 +654,7 @@ class SpatialDetectorNode(Node):
 
 
     def _to_detection_array(self, detections_msg):
-        """Converteer DepthAI-detecties naar depthai_ros_msgs berichttype.
+        """Converteer DepthAI-detecties naar my_depthai_interfaces berichttype.
 
         Bounding boxes worden van genormaliseerde naar pixelcoordinaten
         omgerekend en XYZ-posities worden van millimeter naar meter gezet.
