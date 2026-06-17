@@ -20,8 +20,8 @@ def launch_setup(context, *args, **kwargs):
 
     camera_model = LaunchConfiguration("camera_model", default="OAK-D")
     tf_prefix = LaunchConfiguration("tf_prefix", default="oak")
-    base_frame = LaunchConfiguration("base_frame", default="oak-d_frame")
-    parent_frame = LaunchConfiguration("parent_frame", default="oak-d-base-frame")
+    base_frame = LaunchConfiguration("base_frame", default="oak")
+    parent_frame = LaunchConfiguration("parent_frame", default="oak_parent_frame")
     cam_pos_x = LaunchConfiguration("cam_pos_x", default="0.0")
     cam_pos_y = LaunchConfiguration("cam_pos_y", default="0.0")
     cam_pos_z = LaunchConfiguration("cam_pos_z", default="0.0")
@@ -33,7 +33,7 @@ def launch_setup(context, *args, **kwargs):
     use_composition = LaunchConfiguration("use_composition", default="false")
 
     name = LaunchConfiguration("tf_prefix").perform(context)
-    camera_description = {
+    robot_description = {
         "robot_description": Command(
             [
                 "xacro",
@@ -82,10 +82,7 @@ def launch_setup(context, *args, **kwargs):
             executable="robot_state_publisher",
             name=name + "_state_publisher",
             namespace=namespace,
-            parameters=[camera_description],
-            remappings=[
-                ('/robot_description', '/camera_description')
-            ]
+            parameters=[robot_description],
         ),
         LoadComposableNodes(
             target_container=f"{namespace.perform(context)}/{name}_container",
@@ -96,10 +93,7 @@ def launch_setup(context, *args, **kwargs):
                     plugin="robot_state_publisher::RobotStatePublisher",
                     name=name + "_state_publisher",
                     namespace=namespace,
-                    parameters=[camera_description],
-                    remappings=[
-                        ('/robot_description', '/camera_description')
-                    ]
+                    parameters=[robot_description],
                 )
             ],
         ),
@@ -125,12 +119,12 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "base_frame",
-            default_value="oak-d_frame",
+            default_value="oak",
             description="Name of the base link.",
         ),
         DeclareLaunchArgument(
             "parent_frame",
-            default_value="oak-d-base-frame",
+            default_value="oak_parent_frame",
             description="Name of the parent link from other a robot TF for example that can be connected to the base of the OAK.",
         ),
         DeclareLaunchArgument(
