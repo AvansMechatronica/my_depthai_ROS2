@@ -84,19 +84,19 @@ rosdep install --ignore-src --from-paths src -y
 
 ## Installatie van de DepthAI python dependency
 
-:::::{card}
+::::::{card}
 
-::::{tab-set}
+:::::{tab-set}
 
-:::{tab-item} In system python environment
+::::{tab-item} In system python environment
 ```bash
 
 pip install depthai --break-system-packages
 ```
 
-:::
+::::
 
-:::{tab-item} In virtuele environment
+::::{tab-item} In virtuele environment
 
 ```bash
 cd ~/my_depthai_ws/src/my_depthai_ROS2
@@ -107,15 +107,15 @@ python -m pip install --upgrade pip
 # DepthAI python dependency
 python -m pip install depthai
 ```
+
 :::{note}
 Als je al ergens een andere virtual environment hebt, en deze wordt gesourced in een `install/setup.bash` van een andere workspace, dan kun je deze ook gebruiken. Zorg er dan wel voor dat de DepthAI python dependency is geïnstalleerd in diezelfde virtual environment.
 :::
-
-:::
-
 ::::
 
 :::::
+
+::::::
 
 
 ## Bouwen van de workspace
