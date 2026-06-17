@@ -26,7 +26,7 @@ Voor het maken van de Depthai ROS2 template maak je gebruik van een Github repos
 
 > we maken gebruik van een prefix my_ur in de packages van de repository om onderscheid te maken met de standaard DepthAIs packages.
 
-:::::{card} 
+:::::{card}
 
 ::::{tab-set}
 
@@ -51,7 +51,7 @@ git clone https://github.com/AvansMechatronica/my_depthai_ROS2.git
 
 ![image](../images/fork.jpg)
 
-* Volg de instructies, maar wijzig de naam van de nieuwe repository niet. Bevestig met **Create Fork**  
+* Volg de instructies, maar wijzig de naam van de nieuwe repository niet. Bevestig met **Create Fork**
 
 * Nu kun je de workspace als volgt creëren
 
@@ -65,14 +65,13 @@ git clone https://github.com/<jouw_account_naam>/my_depthai_ROS2.git
 
 :::
 
-
 ::::
 
 :::::
 
 
-
 ## Installatie van DepthAI support packages
+
 Met onderstaand commando worden alle benodigde software voor de template geinstalleerd en de workspace gebouwd met colcon.
 
 ```bash
@@ -81,13 +80,11 @@ rosdep update
 rosdep install --ignore-src --from-paths src -y
 ```
 
-Installeer ook de algemene DepthAI ROS packages, deze worden gebruikt in de template en zijn nodig voor de werking van de template. Deze worden niet automatisch geïnstalleerd met rosdep, dus deze moet je apart installeren.
-```bash
-sudo apt install ros-$ROS_DISTRO-depthai-ros
-```
+
 
 ## Installatie van de DepthAI python dependency
-:::::{card} 
+
+:::::{card}
 
 ::::{tab-set}
 
@@ -115,7 +112,6 @@ Als je al ergens een andere virtual environment hebt, en deze wordt gesourced in
 :::
 
 :::
-
 
 ::::
 
