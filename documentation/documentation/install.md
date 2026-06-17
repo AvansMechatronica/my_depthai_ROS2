@@ -8,12 +8,6 @@ Als in dit document gesproken wordt over een development-computer dan wordt hier
 ## Voorbereidingen
 
 ### Installeer udev rules voor de camera
-```bash
-wget -qO- https://docs.luxonis.com/install_dependencies/ | bash
-```
-
-of (nog even uitzoeken)
-
 
 ```bash
 echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/udev/rules.d/80-movidius.rules
@@ -75,7 +69,7 @@ git clone https://github.com/<jouw_account_naam>/my_depthai_ROS2.git
 Met onderstaand commando worden alle benodigde software voor de template geinstalleerd en de workspace gebouwd met colcon.
 
 ```bash
-cd ~/my_depthai_ws/src/my_depthai_ROS2
+cd ~/my_depthai_ws/
 rosdep update
 rosdep install --ignore-src --from-paths src -y
 ```
