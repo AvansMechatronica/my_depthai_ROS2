@@ -86,6 +86,8 @@ rosdep install --ignore-src --from-paths src -y
 ```bash
 
 pip install depthai --break-system-packages
+pip install depthai-nodes --break-system-packages
+pip install opencv-python --break-system-packages
 ```
 
 ::::
