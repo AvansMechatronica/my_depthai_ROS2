@@ -3,7 +3,7 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-package_name = 'pose_estimation'
+package_name = 'my_depthai_pose_estimation'
 
 
 def package_files(directory, install_subdir):
@@ -23,7 +23,12 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
         ('share/' + package_name + '/rviz', glob('rviz/*.rviz')),
-    ] + package_files('pose_estimation/hand_pose/depthai_models', 'hand_pose/depthai_models') + package_files('pose_estimation/hand_pose/utils', 'hand_pose/utils'),
+        ] + package_files('pose_estimation/hand_pose/depthai_models', 'hand_pose/depthai_models') 
+            + package_files('pose_estimation/hand_pose/utils', 'hand_pose/utils')
+            + package_files('pose_estimation/animal_pose/depthai_models', 'animal_pose/depthai_models')
+            + package_files('pose_estimation/animal_pose/utils', 'animal_pose/utils')
+            + package_files('pose_estimation/human_pose/depthai_models', 'human_pose/depthai_models')
+            + package_files('pose_estimation/human_pose/utils', 'human_pose/utils'),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='gerard',
@@ -39,6 +44,10 @@ setup(
         'console_scripts': [
             'hand_pose_node = pose_estimation.hand_pose.hand_pose_node:main',
             'hand_pose_markers_node = pose_estimation.hand_pose.hand_pose_markers_node:main',
+            'animal_pose_node = pose_estimation.animal_pose.animal_pose_node:main',
+            'animal_pose_markers_node = pose_estimation.animal_pose.animal_pose_markers_node:main',
+            'human_pose_node = pose_estimation.human_pose.human_pose_node:main',
+            'human_pose_markers_node = pose_estimation.human_pose.human_pose_markers_node:main',
         ],
     },
 )

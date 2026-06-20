@@ -189,8 +189,8 @@ class HandPoseNode(Node):
 
         # Prefer installed ROS share path when available.
         try:
-            share_dir = Path(get_package_share_directory("pose_estimation"))
-            share_candidate = share_dir / "pose_estimation`"
+            share_dir = Path(get_package_share_directory("my_depthai_pose_estimation"))
+            share_candidate = share_dir / "hand_pose"
             if share_candidate.exists():
                 return share_candidate
         except PackageNotFoundError:
@@ -198,25 +198,26 @@ class HandPoseNode(Node):
 
         # Fall back to common source/build workspace layouts.
         candidates = [
-            current_file.parents[1] / "pose_estimation" / "pose_estimation" / "hand-pose",
+            current_file.parent,
+            current_file.parents[1] / "hand_pose",
             current_file.parents[3]
             / "src"
             / "my_depthai_ROS2"
             / "pose_estimation"
             / "pose_estimation"
-            / "hand-pose",
+            / "hand_pose",
             current_file.parents[3]
             / "install"
             / "pose_estimation"
             / "share"
             / "pose_estimation"
-            / "hand-pose",
+            / "hand_pose",
         ]
         for candidate in candidates:
             if candidate.exists():
                 return candidate
 
-        raise FileNotFoundError("Could not locate hand-pose assets directory.")
+        raise FileNotFoundError("Could not locate hand_pose assets directory.")
 
     def _configure_imports(self, hand_pose_root: Path) -> None:
         global ProcessDetections, recognize_gesture

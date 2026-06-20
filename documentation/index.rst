@@ -22,6 +22,7 @@ Welkom bij de DepthAI Template Repository
    documentation/tools.md
    documentation/ai_netwerk.md
    documentation/custom_app.md
+   documentation/pose_estimation.md
    documentation/troubleshooting.md
    documentation/faq.md
 

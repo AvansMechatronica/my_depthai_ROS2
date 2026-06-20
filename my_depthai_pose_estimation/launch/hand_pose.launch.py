@@ -113,13 +113,13 @@ def generate_launch_description() -> LaunchDescription:
     rviz_config_arg = DeclareLaunchArgument(
         "rviz_config",
         default_value=PathJoinSubstitution(
-            [FindPackageShare("pose_estimation"), "rviz", "hand_pose.rviz"]
+            [FindPackageShare("my_depthai_pose_estimation"), "rviz", "hand_pose.rviz"]
         ),
         description="Absolute path to the RViz2 config file.",
     )
 
     hand_pose_node = Node(
-        package="pose_estimation",
+        package="my_depthai_pose_estimation",
         executable="hand_pose_node",
         name="hand_pose_node",
         output="screen",
@@ -136,7 +136,7 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     hand_pose_markers_node = Node(
-        package="pose_estimation",
+        package="my_depthai_pose_estimation",
         executable="hand_pose_markers_node",
         name="hand_pose_markers_node",
         output="screen",
