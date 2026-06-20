@@ -1,6 +1,6 @@
-# my_depthai_pose_estimation
+# Pose Estimation
 
-ROS 2 (Jazzy) pakket voor realtime hand-, mens- en dier-pose-estimatie met DepthAI OAK-camera's.
+De package `my_depthai_pose_estimation` is een ROS 2 (Jazzy) pakket voor realtime hand-, mens- en dier-pose-estimatie met DepthAI OAK-camera's.
 
 ## Functies
 
