@@ -1,0 +1,275 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installatie van de DepthAI-repository &mdash; DepthAI Template Repository 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="next" title="Applicaties" href="app.html" />
+    <link rel="prev" title="Inleiding" href="overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DepthAI Template Repository
+              <img src="../_static/avans-hogeschool.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installatie van de DepthAI-repository</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#development-computer">Development computer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#voorbereidingen">Voorbereidingen</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installeer-udev-rules-voor-de-camera">Installeer udev rules voor de camera</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cloning-de-ros2-depthai-template">Cloning de ROS2 DepthAI template</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installatie-van-depthai-support-packages">Installatie van DepthAI support packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installatie-van-de-depthai-python-dependency">Installatie van de DepthAI python dependency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bouwen-van-de-workspace">Bouwen van de workspace</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bouw-de-workspace">Bouw de workspace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#voeg-environment-toe-aan-bashrc">Voeg environment toe aan bashrc</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#testen-van-de-installatie">Testen van de installatie</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">Applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Hulpprogramma’s en tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_netwerk.html">AI Netwerk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_app.html">Aangepaste applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pose_estimation.html">Pose Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="object_tracking.html">Object Tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Problemen oplossen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Veel gestelde vragen</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DepthAI Template Repository</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installatie van de DepthAI-repository</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/install.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="installatie-van-de-depthai-repository">
+<h1>Installatie van de DepthAI-repository<a class="headerlink" href="#installatie-van-de-depthai-repository" title="Link to this heading"></a></h1>
+<p>Hier wordt beschreven hoe je de repository kan verkrijgen, kunt bouwen en vervolgens kunt testen.</p>
+<section id="development-computer">
+<h2>Development computer<a class="headerlink" href="#development-computer" title="Link to this heading"></a></h2>
+<p>Als in dit document gesproken wordt over een development-computer dan wordt hiermee bedoeld de laptop/computer waarop je de software in ROS2 ontwikkelt.</p>
+</section>
+<section id="voorbereidingen">
+<h2>Voorbereidingen<a class="headerlink" href="#voorbereidingen" title="Link to this heading"></a></h2>
+<section id="installeer-udev-rules-voor-de-camera">
+<h3>Installeer udev rules voor de camera<a class="headerlink" href="#installeer-udev-rules-voor-de-camera" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;SUBSYSTEM==&quot;usb&quot;, ATTRS{idVendor}==&quot;03e7&quot;, MODE=&quot;0666&quot;&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/udev/rules.d/80-movidius.rules
+sudo<span class="w"> </span>udevadm<span class="w"> </span>control<span class="w"> </span>--reload-rules
+sudo<span class="w"> </span>udevadm<span class="w"> </span>trigger
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cloning-de-ros2-depthai-template">
+<h2>Cloning de ROS2 DepthAI template<a class="headerlink" href="#cloning-de-ros2-depthai-template" title="Link to this heading"></a></h2>
+<p>Voor het maken van de Depthai ROS2 template maak je gebruik van een Github repository. Je kunt er voor kiezen om deze clone onder een eigen account van Github te plaatsen (1e keuze hieronder). Je kunt daarna eenvoudig backup’s van je werk maken naar je eigen Github account.</p>
+<blockquote>
+<div><p>we maken gebruik van een prefix my_ur in de packages van de repository om onderscheid te maken met de standaard DepthAIs packages.</p>
+</div></blockquote>
+<div class="sd-card sd-sphinx-override sd-mb-3 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+Zonder GIT-repository support</label><div class="sd-tab-content docutils">
+<ul class="simple">
+<li><p class="sd-card-text">Je kunt de workspace als volgt creëren</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/my_depthai_ws/src
+<span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws/src
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/AvansMechatronica/my_depthai_ROS2.git
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+Met GIT-repository support</label><div class="sd-tab-content docutils">
+<ul class="simple">
+<li><p class="sd-card-text">Maak een account aan bij <a class="reference external" href="https://github.com/">Github</a> en login op dit account</p></li>
+<li><p class="sd-card-text">Open de <a class="reference external" href="https://github.com/AvansMechatronica/my_depthai_ROS2">my_depthai_ROS2</a> repository</p></li>
+<li><p class="sd-card-text">Maak een Fork van de repository naar je eigen Github account door op het <strong>Fork icoon</strong>  te klikken:</p></li>
+</ul>
+<p class="sd-card-text"><img alt="image" src="../_images/fork.jpg" /></p>
+<ul class="simple">
+<li><p class="sd-card-text">Volg de instructies, maar wijzig de naam van de nieuwe repository niet. Bevestig met <strong>Create Fork</strong></p></li>
+<li><p class="sd-card-text">Nu kun je de workspace als volgt creëren</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/my_depthai_ws/src
+<span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws/src
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/&lt;jouw_account_naam&gt;/my_depthai_ROS2.git
+</pre></div>
+</div>
+<p class="sd-card-text"><em>ps. Het gebruik van github (zoals add, commit &amp; push commando’s) valt  buiten de scope van deze documentatie</em></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="installatie-van-depthai-support-packages">
+<h2>Installatie van DepthAI support packages<a class="headerlink" href="#installatie-van-depthai-support-packages" title="Link to this heading"></a></h2>
+<p>Met onderstaand commando worden alle benodigde software voor de template geinstalleerd en de workspace gebouwd met colcon.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws/
+rosdep<span class="w"> </span>update
+rosdep<span class="w"> </span>install<span class="w"> </span>--ignore-src<span class="w"> </span>--from-paths<span class="w"> </span>src<span class="w"> </span>-y
+</pre></div>
+</div>
+</section>
+<section id="installatie-van-de-depthai-python-dependency">
+<h2>Installatie van de DepthAI python dependency<a class="headerlink" href="#installatie-van-de-depthai-python-dependency" title="Link to this heading"></a></h2>
+<div class="sd-card sd-sphinx-override sd-mb-3 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+In system python environment</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>depthai<span class="w"> </span>--break-system-packages
+pip<span class="w"> </span>install<span class="w"> </span>depthai-nodes<span class="w"> </span>--break-system-packages
+pip<span class="w"> </span>install<span class="w"> </span>opencv-python<span class="w"> </span>--break-system-packages
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-3">
+In virtuele environment</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws/src/my_depthai_ROS2
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+
+<span class="c1"># DepthAI python dependency</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>depthai
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Notitie</p>
+<p class="sd-card-text">Als je al ergens een andere virtual environment hebt, en deze wordt gesourced in een <code class="docutils literal notranslate"><span class="pre">install/setup.bash</span></code> van een andere workspace, dan kun je deze ook gebruiken. Zorg er dan wel voor dat de DepthAI python dependency is geïnstalleerd in diezelfde virtual environment.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="bouwen-van-de-workspace">
+<h2>Bouwen van de workspace<a class="headerlink" href="#bouwen-van-de-workspace" title="Link to this heading"></a></h2>
+<section id="bouw-de-workspace">
+<h3>Bouw de workspace<a class="headerlink" href="#bouw-de-workspace" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws
+colcon<span class="w"> </span>build<span class="w"> </span>--symlink-install
+<span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+</section>
+<section id="voeg-environment-toe-aan-bashrc">
+<h3>Voeg environment toe aan bashrc<a class="headerlink" href="#voeg-environment-toe-aan-bashrc" title="Link to this heading"></a></h3>
+<p>Om de installatie automatisch te sourcen bij het openen van een nieuwe terminal, kun je de volgende regel toevoegen aan je <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> bestand:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>~/my_depthai_ws/install/setup.bash
+</pre></div>
+</div>
+<p>Je kunt dit met het volgende commando doen:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;source ~/my_depthai_ws/install/setup.bash&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+</pre></div>
+</div>
+</section>
+</section>
+<section id="testen-van-de-installatie">
+<h2>Testen van de installatie<a class="headerlink" href="#testen-van-de-installatie" title="Link to this heading"></a></h2>
+<p>Je kunt de installatie testen door onderstaand commando. Sluit de DepthAi camera aan op de computer en start de volgende ROS2 applicatie</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_python<span class="w"> </span>depthai_template.launch.py
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="overview.html" class="btn btn-neutral float-left" title="Inleiding" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+        <a href="app.html" class="btn btn-neutral float-right" title="Applicaties" accesskey="n" rel="next">Volgende <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

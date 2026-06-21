@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pose Estimation &mdash; DepthAI Template Repository 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="next" title="Object Tracking" href="object_tracking.html" />
+    <link rel="prev" title="Aangepaste applicaties" href="custom_app.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DepthAI Template Repository
+              <img src="../_static/avans-hogeschool.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installatie van de DepthAI-repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">Applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Hulpprogramma’s en tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_netwerk.html">AI Netwerk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_app.html">Aangepaste applicaties</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pose Estimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functies">Functies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pakketstructuur">Pakketstructuur</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bouwen">Bouwen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#starten">Starten</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hand-pose">Hand Pose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#human-pose">Human Pose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#animal-pose">Animal Pose</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gepubliceerde-topics">Gepubliceerde topics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hand">Hand</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#human">Human</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#animal">Animal</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#nuttige-launch-argumenten">Nuttige launch-argumenten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#individuele-nodes-starten">Individuele nodes starten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#probleemoplossing">Probleemoplossing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#launch-fout-libexec-directory-bestaat-niet">Launch-fout: libexec-directory bestaat niet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#launch-fout-package-not-found">Launch-fout: package not found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#geen-oak-device-aangesloten">Geen OAK-device aangesloten</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="object_tracking.html">Object Tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Problemen oplossen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Veel gestelde vragen</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DepthAI Template Repository</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Pose Estimation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/pose_estimation.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="pose-estimation">
+<h1>Pose Estimation<a class="headerlink" href="#pose-estimation" title="Link to this heading"></a></h1>
+<p>De package <code class="docutils literal notranslate"><span class="pre">my_depthai_pose_estimation</span></code> is een ROS 2 pakket voor realtime hand-, mens- en dier-pose-estimatie met DepthAI OAK-camera’s.</p>
+<section id="functies">
+<h2>Functies<a class="headerlink" href="#functies" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Handpose-pipeline met landmarks, marker-visualisatie en RViz-launch.</p></li>
+<li><p>Human-pose-pipeline met image output, landmarks output, marker-visualisatie en RViz-launch.</p></li>
+<li><p>Animal-pose-pipeline met image output, landmarks output, marker-visualisatie en RViz-launch.</p></li>
+<li><p>Reconnect-veilige startup als er geen OAK-device is aangesloten.</p></li>
+</ul>
+</section>
+<section id="pakketstructuur">
+<h2>Pakketstructuur<a class="headerlink" href="#pakketstructuur" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pose_estimation/hand_pose/</span></code> - handpose-nodes en assets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pose_estimation/human_pose/</span></code> - humaan-pose-nodes en assets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pose_estimation/animal_pose/</span></code> - dier-pose-nodes en assets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">launch/</span></code> - launch-bestanden</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rviz/</span></code> - RViz-presets</p></li>
+</ul>
+</section>
+<section id="bouwen">
+<h2>Bouwen<a class="headerlink" href="#bouwen" title="Link to this heading"></a></h2>
+<p>Vanaf de root van de workspace:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws
+colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>my_depthai_interfaces<span class="w"> </span>my_depthai_pose_estimation
+<span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+</section>
+<section id="starten">
+<h2>Starten<a class="headerlink" href="#starten" title="Link to this heading"></a></h2>
+<section id="hand-pose">
+<h3>Hand Pose<a class="headerlink" href="#hand-pose" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>hand_pose.launch.py
+</pre></div>
+</div>
+</section>
+<section id="human-pose">
+<h3>Human Pose<a class="headerlink" href="#human-pose" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>human_pose.launch.py
+</pre></div>
+</div>
+</section>
+<section id="animal-pose">
+<h3>Animal Pose<a class="headerlink" href="#animal-pose" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>animal_pose.launch.py
+</pre></div>
+</div>
+</section>
+</section>
+<section id="gepubliceerde-topics">
+<h2>Gepubliceerde topics<a class="headerlink" href="#gepubliceerde-topics" title="Link to this heading"></a></h2>
+<section id="hand">
+<h3>Hand<a class="headerlink" href="#hand" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/hand_pose/image</span></code> (<code class="docutils literal notranslate"><span class="pre">sensor_msgs/msg/Image</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/hand_pose/landmarks</span></code> (<code class="docutils literal notranslate"><span class="pre">my_depthai_interfaces/msg/HandLandmarkArray</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/hand_pose/markers</span></code> (<code class="docutils literal notranslate"><span class="pre">visualization_msgs/msg/MarkerArray</span></code>)</p></li>
+</ul>
+</section>
+<section id="human">
+<h3>Human<a class="headerlink" href="#human" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/human_pose/image</span></code> (<code class="docutils literal notranslate"><span class="pre">sensor_msgs/msg/Image</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/human_pose/landmarks</span></code> (<code class="docutils literal notranslate"><span class="pre">my_depthai_interfaces/msg/HumanLandmarkArray</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/human_pose/markers</span></code> (<code class="docutils literal notranslate"><span class="pre">visualization_msgs/msg/MarkerArray</span></code>)</p></li>
+</ul>
+</section>
+<section id="animal">
+<h3>Animal<a class="headerlink" href="#animal" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/animal_pose/image</span></code> (<code class="docutils literal notranslate"><span class="pre">sensor_msgs/msg/Image</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/animal_pose/landmarks</span></code> (<code class="docutils literal notranslate"><span class="pre">my_depthai_interfaces/msg/AnimalLandmarkArray</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/animal_pose/markers</span></code> (<code class="docutils literal notranslate"><span class="pre">visualization_msgs/msg/MarkerArray</span></code>)</p></li>
+</ul>
+</section>
+</section>
+<section id="nuttige-launch-argumenten">
+<h2>Nuttige launch-argumenten<a class="headerlink" href="#nuttige-launch-argumenten" title="Link to this heading"></a></h2>
+<p>Veelgebruikte argumenten in launch-bestanden:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">device</span></code> - Optionele OAK device-id/naam/IP.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">media_path</span></code> - Optioneel videobestand als input in plaats van camerastream.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fps_limit</span></code> - FPS-limiet tijdens runtime (<code class="docutils literal notranslate"><span class="pre">0</span></code> gebruikt platformstandaard).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image_topic</span></code> - Overschrijven van image output-topic.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">landmarks_topic</span></code> - Overschrijven van landmarks output-topic (hand/human/animal).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">markers_topic</span></code> - Overschrijven van marker-topic.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_markers</span></code> - Marker-node starten (<code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_rviz</span></code> - RViz starten (<code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rviz_config</span></code> - RViz-configpad overschrijven.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_urdf</span></code> - Camera URDF/TF launch starten.</p></li>
+</ul>
+<p>Voorbeeld:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>human_pose.launch.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>start_rviz:<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>start_markers:<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>image_topic:<span class="o">=</span>/demo/human/image
+</pre></div>
+</div>
+</section>
+<section id="individuele-nodes-starten">
+<h2>Individuele nodes starten<a class="headerlink" href="#individuele-nodes-starten" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>hand_pose_node
+ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>hand_pose_markers_node
+ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>human_pose_node
+ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>human_pose_markers_node
+ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>animal_pose_node
+ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_pose_estimation<span class="w"> </span>animal_pose_markers_node
+</pre></div>
+</div>
+</section>
+<section id="probleemoplossing">
+<h2>Probleemoplossing<a class="headerlink" href="#probleemoplossing" title="Link to this heading"></a></h2>
+<section id="launch-fout-libexec-directory-bestaat-niet">
+<h3>Launch-fout: libexec-directory bestaat niet<a class="headerlink" href="#launch-fout-libexec-directory-bestaat-niet" title="Link to this heading"></a></h3>
+<p>Als launch meldt:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lib/my_depthai_pose_estimation</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">exist</span></code></p></li>
+</ul>
+<p>Bouw opnieuw en source opnieuw:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws
+colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>my_depthai_pose_estimation
+<span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+</section>
+<section id="launch-fout-package-not-found">
+<h3>Launch-fout: package not found<a class="headerlink" href="#launch-fout-package-not-found" title="Link to this heading"></a></h3>
+<p>Als launch package-resolutieproblemen meldt, zorg voor een frisse omgeving:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws
+<span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+</section>
+<section id="geen-oak-device-aangesloten">
+<h3>Geen OAK-device aangesloten<a class="headerlink" href="#geen-oak-device-aangesloten" title="Link to this heading"></a></h3>
+<p>Nodes proberen automatisch opnieuw via <code class="docutils literal notranslate"><span class="pre">reconnect_interval_sec</span></code> en starten zodra een device beschikbaar is.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="custom_app.html" class="btn btn-neutral float-left" title="Aangepaste applicaties" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+        <a href="object_tracking.html" class="btn btn-neutral float-right" title="Object Tracking" accesskey="n" rel="next">Volgende <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

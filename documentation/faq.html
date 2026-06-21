@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veel gestelde vragen &mdash; DepthAI Template Repository 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="prev" title="Problemen oplossen" href="troubleshooting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DepthAI Template Repository
+              <img src="../_static/avans-hogeschool.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installatie van de DepthAI-repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">Applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Hulpprogramma’s en tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_netwerk.html">AI Netwerk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_app.html">Aangepaste applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pose_estimation.html">Pose Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="object_tracking.html">Object Tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Problemen oplossen</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Veel gestelde vragen</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#kan-ik-de-yolo-spatial-detector-zonder-rviz-monitor-starten">Kan ik de yolo-spatial-detector zonder RVIZ-monitor starten?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kan-ik-het-camera-urdf-model-toevoegen-aan-mijn-eigen-robot-urdf-model">Kan ik het camera URDF-model toevoegen aan mijn eigen robot URDF-model?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kan-ik-de-positie-van-de-camera-wijzigen">Kan ik de positie van de camera wijzigen?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kan-ik-ander-type-camera-dan-de-oak-d-gebruiken">Kan ik ander type camera, dan de <code class="docutils literal notranslate"><span class="pre">OAK-D</span></code> gebruiken</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kan-in-het-urdf-model-van-de-camera-ook-combineren-met-mijn-eigen-robot-model">Kan in het urdf-model van de camera ook combineren met mijn eigen robot model?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#wanneer-moet-ik-colcon-build-gebruiken">Wanneer moet ik <code class="docutils literal notranslate"><span class="pre">colcon</span> <span class="pre">build</span></code> gebruiken?</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DepthAI Template Repository</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Veel gestelde vragen</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/faq.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="veel-gestelde-vragen">
+<h1>Veel gestelde vragen<a class="headerlink" href="#veel-gestelde-vragen" title="Link to this heading"></a></h1>
+<section id="kan-ik-de-yolo-spatial-detector-zonder-rviz-monitor-starten">
+<h2>Kan ik de yolo-spatial-detector zonder RVIZ-monitor starten?<a class="headerlink" href="#kan-ik-de-yolo-spatial-detector-zonder-rviz-monitor-starten" title="Link to this heading"></a></h2>
+<p>Start de applicatie als volgt:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_python<span class="w"> </span>spatial_detector.launch.py<span class="w"> </span>rviz:<span class="o">=</span><span class="nb">false</span>
+</pre></div>
+</div>
+</section>
+<section id="kan-ik-het-camera-urdf-model-toevoegen-aan-mijn-eigen-robot-urdf-model">
+<h2>Kan ik het camera URDF-model toevoegen aan mijn eigen robot URDF-model?<a class="headerlink" href="#kan-ik-het-camera-urdf-model-toevoegen-aan-mijn-eigen-robot-urdf-model" title="Link to this heading"></a></h2>
+<p>Start de camera-applicatie op zonder dat je RVIZ start, zie hierboven.
+Start je “eigen” robot applicatie met daarin de eigen RVIZ visualisatie.</p>
+<p>Voeg in de RVIZ-configuratie een <code class="docutils literal notranslate"><span class="pre">RobotModel</span></code> toe met als <code class="docutils literal notranslate"><span class="pre">Description</span> <span class="pre">Topic</span></code> het <code class="docutils literal notranslate"><span class="pre">/camera_description</span></code> topic.</p>
+<p>Voeg vervolgens in de RVIZ-configuratie topics toe die door de camera worden gegenereerd zoals bv.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Image</span><span class="p">:</span> <span class="o">/</span><span class="n">color</span><span class="o">/</span><span class="n">image_rect</span>
+<span class="n">Image</span><span class="p">:</span> <span class="o">/</span><span class="n">color</span><span class="o">/</span><span class="n">image_w_bouding_boxes</span>
+<span class="n">Marker</span><span class="p">:</span> <span class="o">/</span><span class="n">color</span><span class="o">/</span><span class="n">ObjectText</span>
+<span class="n">PointCloud2</span><span class="p">:</span> <span class="o">/</span><span class="n">stereo</span><span class="o">/</span><span class="n">points</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Vergeet niet naderhand de configuratie op te slaan</p>
+</div>
+</section>
+<section id="kan-ik-de-positie-van-de-camera-wijzigen">
+<h2>Kan ik de positie van de camera wijzigen?<a class="headerlink" href="#kan-ik-de-positie-van-de-camera-wijzigen" title="Link to this heading"></a></h2>
+<p>Ja dat kan, pas in de juiste launchfile in de <code class="docutils literal notranslate"><span class="pre">launch</span></code> map van de <code class="docutils literal notranslate"><span class="pre">my_depthai_python</span></code> package onderstaande regels aan:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">spatial_detector.launch.py</span></code></p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+    <span class="n">tf_prefix_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;tf_prefix&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;oak&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;TF prefix / camera name for URDF frames&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">base_frame_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;base_frame&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;oak-d_frame&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Base frame name for camera URDF&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parent_frame_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;parent_frame&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Parent frame to attach camera URDF&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cam_pos_x_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;cam_pos_x&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;0.25&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Camera X position relative to parent frame&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cam_pos_y_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;cam_pos_y&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;0.0&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Camera Y position relative to parent frame&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cam_pos_z_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;cam_pos_z&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;0.5&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Camera Z position relative to parent frame&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cam_roll_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;cam_roll&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;0.0&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Camera roll relative to parent frame&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cam_pitch_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;cam_pitch&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;0.0&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Camera pitch relative to parent frame&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cam_yaw_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;cam_yaw&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;0.0&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Camera yaw relative to parent frame&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+</pre></div>
+</div>
+<p>De waarden zijn ten opzichte van het <code class="docutils literal notranslate"><span class="pre">world</span></code> frame, maar je kunt ook een referentie leggen naar de eigen robot, b.v. de end-effector van een robotarm. In dat geval dien je <code class="docutils literal notranslate"><span class="pre">parent_frame</span></code> aan te passen naar het frame van de robot waar je de camera aan wilt koppelen.</p>
+</section>
+<section id="kan-ik-ander-type-camera-dan-de-oak-d-gebruiken">
+<h2>Kan ik ander type camera, dan de <code class="docutils literal notranslate"><span class="pre">OAK-D</span></code> gebruiken<a class="headerlink" href="#kan-ik-ander-type-camera-dan-de-oak-d-gebruiken" title="Link to this heading"></a></h2>
+<p>Pas in de juiste launchfile in de <code class="docutils literal notranslate"><span class="pre">launch</span></code> map van de <code class="docutils literal notranslate"><span class="pre">my_depthai_python</span></code> package onderstaande regels aan:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">spatial_detector.launch.py</span></code></p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">camera_model_arg</span> <span class="o">=</span> <span class="n">DeclareLaunchArgument</span><span class="p">(</span>
+        <span class="s1">&#39;camera_model&#39;</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="o">=</span><span class="s1">&#39;OAK-D&#39;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;DepthAI camera model used by the URDF&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="kan-in-het-urdf-model-van-de-camera-ook-combineren-met-mijn-eigen-robot-model">
+<h2>Kan in het urdf-model van de camera ook combineren met mijn eigen robot model?<a class="headerlink" href="#kan-in-het-urdf-model-van-de-camera-ook-combineren-met-mijn-eigen-robot-model" title="Link to this heading"></a></h2>
+<p>ja je kunt de camera URDF combineren met je eigen robot URDF. In dat geval dien je in de launchfile van de camera (bv. <code class="docutils literal notranslate"><span class="pre">spatial_detector.launch.py</span></code>) de <code class="docutils literal notranslate"><span class="pre">parent_frame</span></code> aan te passen naar het frame van de robot waar je de camera aan wilt koppelen.</p>
+<p>je start dan de camera-applicatie op zonder dat je RVIZ start.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_python<span class="w"> </span>spatial_detector.launch.py<span class="w"> </span>rviz:<span class="o">=</span><span class="nb">false</span>
+</pre></div>
+</div>
+<p>Start je “eigen” robot applicatie met daarin de eigen RVIZ visualisatie. En voeg in de RVIZ-configuratie een <code class="docutils literal notranslate"><span class="pre">RobotModel</span></code> toe met als <code class="docutils literal notranslate"><span class="pre">Description</span> <span class="pre">Topic</span></code> het <code class="docutils literal notranslate"><span class="pre">/camera_description</span></code> topic.
+Vergeet niet naderhand de configuratie op te slaan. Je kunt eveneens topics toevoegen die door de camera worden gegenereerd zoals bv.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">camera</span><span class="o">/</span><span class="n">rgb</span>
+<span class="o">/</span><span class="n">camera_description</span>
+</pre></div>
+</div>
+<p>als je de <code class="docutils literal notranslate"><span class="pre">pointcloud_from_images</span></code> node hebt gestart, dan kun je ook de volgende topics toevoegen:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">stereo</span><span class="o">/</span><span class="n">pointcloud</span>
+</pre></div>
+</div>
+</section>
+<section id="wanneer-moet-ik-colcon-build-gebruiken">
+<h2>Wanneer moet ik <code class="docutils literal notranslate"><span class="pre">colcon</span> <span class="pre">build</span></code> gebruiken?<a class="headerlink" href="#wanneer-moet-ik-colcon-build-gebruiken" title="Link to this heading"></a></h2>
+<p>Het <code class="docutils literal notranslate"><span class="pre">colcon</span> <span class="pre">build</span> <span class="pre">--symlink-install</span></code> wordt alleen gebruikt voor de volgende situaties:</p>
+<ul class="simple">
+<li><p>Er zijn bestanden aan een ROS2 package toegevoegd</p></li>
+<li><p>Er is een nieuwe ROS2 package gemaakt</p></li>
+<li><p>De inhoud van een <code class="docutils literal notranslate"><span class="pre">C</span></code> of <code class="docutils literal notranslate"><span class="pre">C++</span></code> bestand is gewijzigd</p></li>
+<li><p>De inhoud van de setup.py van een Python package is gewijzigd</p></li>
+<li><p>De inhoud van <code class="docutils literal notranslate"><span class="pre">package.xml</span></code> of <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> is gewijzigd</p></li>
+</ul>
+<p>Na de build dien je altijd het volgende commando in <code class="docutils literal notranslate"><span class="pre">alle</span> <span class="pre">openstaande</span></code> terminals uit te voeren:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/</span><span class="n">my_ur_ws</span><span class="o">/</span><span class="n">install</span><span class="o">/</span><span class="n">setup</span><span class="o">.</span><span class="n">bash</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="troubleshooting.html" class="btn btn-neutral float-left" title="Problemen oplossen" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

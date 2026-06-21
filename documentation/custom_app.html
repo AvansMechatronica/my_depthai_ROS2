@@ -1,0 +1,173 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aangepaste applicaties &mdash; DepthAI Template Repository 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="next" title="Pose Estimation" href="pose_estimation.html" />
+    <link rel="prev" title="AI Netwerk" href="ai_netwerk.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DepthAI Template Repository
+              <img src="../_static/avans-hogeschool.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installatie van de DepthAI-repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">Applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Hulpprogramma’s en tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_netwerk.html">AI Netwerk</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Aangepaste applicaties</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stappen-om-een-aangepaste-applicatie-te-maken">Stappen om een aangepaste applicatie te maken</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-template-depthai">Python template (DepthAI)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#optionele-parameters">Optionele parameters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pose_estimation.html">Pose Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="object_tracking.html">Object Tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Problemen oplossen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Veel gestelde vragen</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DepthAI Template Repository</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Aangepaste applicaties</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/custom_app.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="aangepaste-applicaties">
+<h1>Aangepaste applicaties<a class="headerlink" href="#aangepaste-applicaties" title="Link to this heading"></a></h1>
+<p>Je kunt ook een eigen aangepaste applicatie maken voor de Luxonis DepthAI hardware. Dit kan handig zijn als je specifieke functionaliteiten wilt implementeren die niet worden gedekt door de standaardapplicaties in de <code class="docutils literal notranslate"><span class="pre">my_depthai_ROS2</span></code> repository.</p>
+<section id="stappen-om-een-aangepaste-applicatie-te-maken">
+<h2>Stappen om een aangepaste applicatie te maken<a class="headerlink" href="#stappen-om-een-aangepaste-applicatie-te-maken" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Gebruik onderstaande voorbeelden als basis voor jouw aangepaste applicatie, of maak een geheel nieuwe applicatie.</p></li>
+<li><p>Kies een voorbeeldprogramma van Luxonis, welke het beste past bij jou vraagstuk</p>
+<ul>
+<li><p><a class="reference external" href="https://docs.luxonis.com/software-v3/depthai/examples/">Depthai Examples</a></p></li>
+<li><p><a class="reference external" href="https://docs.luxonis.com/software-v3/ai-inference/inference/oak-examples">Oak Examples</a></p></li>
+<li><p><a class="reference external" href="https://github.com/luxonis/oak-examples">GitHub Oak Examples</a></p></li>
+</ul>
+</li>
+<li><p>Maak van dit voorbeeld programma een ROS node en test of je de ROS-node kunt starten</p></li>
+<li><p>Voeg aan de ROS-node topics toe die het mogelijk maken om informatie uit jou beelden met andere nodes te delen.</p></li>
+<li><p>Maak eventueel een custom ROS2 message aan.</p></li>
+<li><p>Je kunt gebruik maken van de <code class="docutils literal notranslate"><span class="pre">depthai_template.py</span></code> node die hieronder is beschreven. Maak van dit bestand en aanverwante configuraie en launchfiles een kopie en pas deze aan naar jouw wensen. Je kunt ook een geheel nieuwe node maken, maar de template kan je helpen om snel aan de slag te gaan.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Notitie</p>
+<p>Bestudeer de Luxonis documentatie goed, zodat je weet welke functionaliteiten er allemaal mogelijk zijn. Er zijn veel voorbeelden beschikbaar die je kunnen helpen bij het maken van jouw aangepaste applicatie. Zie <a class="reference external" href="https://docs.luxonis.com/software-v3/">DepthAI Software</a> voor meer informatie.</p>
+</div>
+</section>
+<section id="python-template-depthai">
+<h2>Python template (DepthAI)<a class="headerlink" href="#python-template-depthai" title="Link to this heading"></a></h2>
+<p>Deze applicatie publiceert RGB-beelden van een OAK-camera op een ROS2 topic. Deze template kan worden gebruikt als basis voor het maken van een aangepaste applicatie die gebruikmaakt van de DepthAI hardware.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_python<span class="w"> </span>depthai_template.launch.py
+</pre></div>
+</div>
+<section id="optionele-parameters">
+<h3>Optionele parameters<a class="headerlink" href="#optionele-parameters" title="Link to this heading"></a></h3>
+<p>De parametsers van deze applicatie kunnen worden aangepast in het <code class="docutils literal notranslate"><span class="pre">depthai_template.yaml</span></code> bestand in de <code class="docutils literal notranslate"><span class="pre">config</span></code> map van de <code class="docutils literal notranslate"><span class="pre">my_depthai_python</span></code> package. De volgende parameters kunnen worden aangepast:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>topic_name: camera/rgb
+camera_info_topic: camera/camera_info
+width: 640
+height: 400
+fps: 30.0
+queue_size: 4
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="ai_netwerk.html" class="btn btn-neutral float-left" title="AI Netwerk" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+        <a href="pose_estimation.html" class="btn btn-neutral float-right" title="Pose Estimation" accesskey="n" rel="next">Volgende <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

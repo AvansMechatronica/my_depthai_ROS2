@@ -1,0 +1,269 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Object Tracking &mdash; DepthAI Template Repository 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="next" title="Problemen oplossen" href="troubleshooting.html" />
+    <link rel="prev" title="Pose Estimation" href="pose_estimation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DepthAI Template Repository
+              <img src="../_static/avans-hogeschool.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installatie van de DepthAI-repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app.html">Applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Hulpprogramma’s en tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_netwerk.html">AI Netwerk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_app.html">Aangepaste applicaties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pose_estimation.html">Pose Estimation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Object Tracking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functionaliteit">Functionaliteit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pakketstructuur">Pakketstructuur</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build">Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#starten">Starten</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#volledige-launch-tracking-markers-rviz-optionele-urdf">Volledige launch (tracking + markers + RViz + optionele URDF)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#losse-nodes-starten">Losse nodes starten</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gepubliceerde-topics">Gepubliceerde topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handige-launch-argumenten">Handige launch-argumenten</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameters-van-de-markernode">Parameters van de markernode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#probleemoplossing">Probleemoplossing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#device-al-in-gebruik-x-link-device-already-in-use">Device al in gebruik (<code class="docutils literal notranslate"><span class="pre">X_LINK_DEVICE_ALREADY_IN_USE</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#geen-oak-device-aangesloten">Geen OAK-device aangesloten</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pakket-of-executable-niet-gevonden">Pakket of executable niet gevonden</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Problemen oplossen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Veel gestelde vragen</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DepthAI Template Repository</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Object Tracking</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/object_tracking.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="object-tracking">
+<h1>Object Tracking<a class="headerlink" href="#object-tracking" title="Link to this heading"></a></h1>
+<p>De package <code class="docutils literal notranslate"><span class="pre">my_depthai_object_tracking</span></code> is een ROS 2 package voor DepthAI-gebaseerde persoons-tracking met Kalman-smoothing, beeld-annotaties, tracklet-berichten en RViz-markers.</p>
+<section id="functionaliteit">
+<h2>Functionaliteit<a class="headerlink" href="#functionaliteit" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Kalman-gesmoothde objecttracking-pipeline met OAK RGB + stereo camera’s.</p></li>
+<li><p>Veilige herstartlogica wanneer geen OAK-device is aangesloten.</p></li>
+<li><p>Publicatie van geannoteerde beelden (<code class="docutils literal notranslate"><span class="pre">sensor_msgs/msg/Image</span></code>).</p></li>
+<li><p>Publicatie van tracklets (<code class="docutils literal notranslate"><span class="pre">my_depthai_interfaces/msg/TrackDetection2DArray</span></code>).</p></li>
+<li><p>Publicatie van markers (<code class="docutils literal notranslate"><span class="pre">visualization_msgs/msg/MarkerArray</span></code>) op basis van tracklets.</p></li>
+<li><p>Optionele RViz-start en optionele camera URDF/TF launch.</p></li>
+</ul>
+</section>
+<section id="pakketstructuur">
+<h2>Pakketstructuur<a class="headerlink" href="#pakketstructuur" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">my_depthai_object_tracking/kalman_tracking/kalman_tracking_node.py</span></code> - hoofdnode voor tracking</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_depthai_object_tracking/kalman_tracking/kalman_tracking_markers_node.py</span></code> - markernode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_depthai_object_tracking/kalman_tracking/depthai_models/</span></code> - modelbestanden (<code class="docutils literal notranslate"><span class="pre">.yaml</span></code> en <code class="docutils literal notranslate"><span class="pre">.tar.xz</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">launch/kalman_tracking.launch.py</span></code> - geïntegreerde launchfile</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rviz/kalman_tracking.rviz</span></code> - RViz preset</p></li>
+</ul>
+</section>
+<section id="build">
+<h2>Build<a class="headerlink" href="#build" title="Link to this heading"></a></h2>
+<p>Vanuit de workspace-root:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws
+colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>my_depthai_interfaces<span class="w"> </span>my_depthai_object_tracking
+<span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+</section>
+<section id="starten">
+<h2>Starten<a class="headerlink" href="#starten" title="Link to this heading"></a></h2>
+<section id="volledige-launch-tracking-markers-rviz-optionele-urdf">
+<h3>Volledige launch (tracking + markers + RViz + optionele URDF)<a class="headerlink" href="#volledige-launch-tracking-markers-rviz-optionele-urdf" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_object_tracking<span class="w"> </span>kalman_tracking.launch.py
+</pre></div>
+</div>
+</section>
+<section id="losse-nodes-starten">
+<h3>Losse nodes starten<a class="headerlink" href="#losse-nodes-starten" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_object_tracking<span class="w"> </span>kalman_tracking_node
+ros2<span class="w"> </span>run<span class="w"> </span>my_depthai_object_tracking<span class="w"> </span>kalman_tracking_markers_node
+</pre></div>
+</div>
+</section>
+</section>
+<section id="gepubliceerde-topics">
+<h2>Gepubliceerde topics<a class="headerlink" href="#gepubliceerde-topics" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/kalman_tracking/image</span></code> (<code class="docutils literal notranslate"><span class="pre">sensor_msgs/msg/Image</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/kalman_tracking/tracklets</span></code> (<code class="docutils literal notranslate"><span class="pre">my_depthai_interfaces/msg/TrackDetection2DArray</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/kalman_tracking/markers</span></code> (<code class="docutils literal notranslate"><span class="pre">visualization_msgs/msg/MarkerArray</span></code>)</p></li>
+</ul>
+</section>
+<section id="handige-launch-argumenten">
+<h2>Handige launch-argumenten<a class="headerlink" href="#handige-launch-argumenten" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">device</span></code> - optionele OAK device id/naam/IP</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fps_limit</span></code> - runtime FPS-limiet (<code class="docutils literal notranslate"><span class="pre">0</span></code> gebruikt platform-default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model_name</span></code> - preset model-bestandsnaam (bijvoorbeeld <code class="docutils literal notranslate"><span class="pre">yolov6_nano_r2_coco.RVC2.yaml</span></code> of <code class="docutils literal notranslate"><span class="pre">SimpleFruitsYoloV8.rvc2.tar.xz</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model_path</span></code> - optioneel pad naar custom modelbestand (<code class="docutils literal notranslate"><span class="pre">.yaml</span></code> of <code class="docutils literal notranslate"><span class="pre">.tar.xz</span></code>), overschrijft <code class="docutils literal notranslate"><span class="pre">model_name</span></code> als gezet</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image_topic</span></code> - output topic voor beeld</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tracklets_topic</span></code> - output topic voor tracklets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">markers_topic</span></code> - output topic voor markers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frame_id</span></code> - frame id voor gepubliceerde image headers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reconnect_interval_sec</span></code> - retry-interval als device niet beschikbaar is</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_markers</span></code> - markernode starten (<code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_rviz</span></code> - RViz starten (<code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rviz_config</span></code> - pad naar custom RViz-config</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start_urdf</span></code> - camera URDF/TF launch starten (<code class="docutils literal notranslate"><span class="pre">true</span></code>/<code class="docutils literal notranslate"><span class="pre">false</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">camera_model</span></code>, <code class="docutils literal notranslate"><span class="pre">tf_prefix</span></code>, <code class="docutils literal notranslate"><span class="pre">base_frame</span></code>, <code class="docutils literal notranslate"><span class="pre">parent_frame</span></code>, <code class="docutils literal notranslate"><span class="pre">cam_pos_x</span></code>, <code class="docutils literal notranslate"><span class="pre">cam_pos_y</span></code>, <code class="docutils literal notranslate"><span class="pre">cam_pos_z</span></code>, <code class="docutils literal notranslate"><span class="pre">cam_roll</span></code>, <code class="docutils literal notranslate"><span class="pre">cam_pitch</span></code>, <code class="docutils literal notranslate"><span class="pre">cam_yaw</span></code> - URDF/TF instellingen</p></li>
+</ul>
+<p>Voorbeeld:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_object_tracking<span class="w"> </span>kalman_tracking.launch.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>start_rviz:<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>start_markers:<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>start_urdf:<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>model_name:<span class="o">=</span>SimpleFruitsYoloV8.rvc2.tar.xz<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>image_topic:<span class="o">=</span>/demo/kalman/image<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>tracklets_topic:<span class="o">=</span>/demo/kalman/tracklets<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>markers_topic:<span class="o">=</span>/demo/kalman/markers
+</pre></div>
+</div>
+<p>Gebruik een custom modelbestand:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ros2<span class="w"> </span>launch<span class="w"> </span>my_depthai_object_tracking<span class="w"> </span>kalman_tracking.launch.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>model_path:<span class="o">=</span>/absoluut/pad/naar/je/model.rvc2.tar.xz
+</pre></div>
+</div>
+</section>
+<section id="parameters-van-de-markernode">
+<h2>Parameters van de markernode<a class="headerlink" href="#parameters-van-de-markernode" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tracklets_topic</span></code> (default: <code class="docutils literal notranslate"><span class="pre">/kalman_tracking/tracklets</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">markers_topic</span></code> (default: <code class="docutils literal notranslate"><span class="pre">/kalman_tracking/markers</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">point_scale</span></code> (default: <code class="docutils literal notranslate"><span class="pre">0.06</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">text_scale</span></code> (default: <code class="docutils literal notranslate"><span class="pre">0.08</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">marker_lifetime_sec</span></code> (default: <code class="docutils literal notranslate"><span class="pre">0.25</span></code>)</p></li>
+</ul>
+</section>
+<section id="probleemoplossing">
+<h2>Probleemoplossing<a class="headerlink" href="#probleemoplossing" title="Link to this heading"></a></h2>
+<section id="device-al-in-gebruik-x-link-device-already-in-use">
+<h3>Device al in gebruik (<code class="docutils literal notranslate"><span class="pre">X_LINK_DEVICE_ALREADY_IN_USE</span></code>)<a class="headerlink" href="#device-al-in-gebruik-x-link-device-already-in-use" title="Link to this heading"></a></h3>
+<p>Een ander proces gebruikt het OAK-device. Stop oude processen en start opnieuw.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ps<span class="w"> </span>-ef<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-Ei<span class="w"> </span><span class="s2">&quot;kalman_tracking_node|ros2 launch my_depthai_object_tracking&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span>grep
+pkill<span class="w"> </span>-f<span class="w"> </span>my_depthai_object_tracking/lib/my_depthai_object_tracking/kalman_tracking_node
+</pre></div>
+</div>
+<p>Start daarna opnieuw.</p>
+</section>
+<section id="geen-oak-device-aangesloten">
+<h3>Geen OAK-device aangesloten<a class="headerlink" href="#geen-oak-device-aangesloten" title="Link to this heading"></a></h3>
+<p>De node probeert automatisch opnieuw volgens <code class="docutils literal notranslate"><span class="pre">reconnect_interval_sec</span></code> en start zodra een device beschikbaar is.</p>
+</section>
+<section id="pakket-of-executable-niet-gevonden">
+<h3>Pakket of executable niet gevonden<a class="headerlink" href="#pakket-of-executable-niet-gevonden" title="Link to this heading"></a></h3>
+<p>Opnieuw builden en sourcen:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/my_depthai_ws
+colcon<span class="w"> </span>build<span class="w"> </span>--packages-select<span class="w"> </span>my_depthai_object_tracking
+<span class="nb">source</span><span class="w"> </span>install/setup.bash
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="pose_estimation.html" class="btn btn-neutral float-left" title="Pose Estimation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Problemen oplossen" accesskey="n" rel="next">Volgende <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
