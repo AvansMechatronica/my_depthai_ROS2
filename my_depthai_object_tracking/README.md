@@ -16,7 +16,7 @@ ROS 2 (Jazzy) package for DepthAI-based person tracking with Kalman smoothing, i
 
 - `my_depthai_object_tracking/kalman_tracking/kalman_tracking_node.py` - main tracking node
 - `my_depthai_object_tracking/kalman_tracking/kalman_tracking_markers_node.py` - marker node
-- `my_depthai_object_tracking/kalman_tracking/depthai_models/` - model YAML files
+- `my_depthai_object_tracking/kalman_tracking/depthai_models/` - model files (`.yaml` and `.tar.xz`)
 - `launch/kalman_tracking.launch.py` - integrated launch file
 - `rviz/kalman_tracking.rviz` - RViz preset
 
@@ -55,6 +55,8 @@ ros2 run my_depthai_object_tracking kalman_tracking_markers_node
 
 - `device` - optional OAK device id/name/IP
 - `fps_limit` - runtime FPS cap (`0` uses platform default)
+- `model_name` - model file name located in `depthai_models/` (`.yaml` or `.tar.xz`)
+- `model_path` - optional custom model file path (`.yaml` or `.tar.xz`), overrides `model_name` when set
 - `image_topic` - image output topic
 - `tracklets_topic` - tracklets output topic
 - `markers_topic` - markers output topic
@@ -73,9 +75,17 @@ ros2 launch my_depthai_object_tracking kalman_tracking.launch.py \
   start_rviz:=true \
   start_markers:=true \
   start_urdf:=true \
+  model_name:=your_model_file.yaml \
   image_topic:=/demo/kalman/image \
   tracklets_topic:=/demo/kalman/tracklets \
   markers_topic:=/demo/kalman/markers
+```
+
+Use a custom model file:
+
+```bash
+ros2 launch my_depthai_object_tracking kalman_tracking.launch.py \
+  model_path:=/absolute/path/to/your/model.rvc2.tar.xz
 ```
 
 ## Marker Node Parameters

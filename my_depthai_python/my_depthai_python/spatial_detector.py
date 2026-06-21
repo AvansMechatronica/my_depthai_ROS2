@@ -426,6 +426,7 @@ class SpatialDetectorNode(Node):
                 monoRight.requestFullResolutionOutput(),
                 dai.DeviceModelZoo.NEURAL_DEPTH_LARGE,
             )
+            
         else:
             self.get_logger().fatal(f"Unknown depth_source: {cfg['depth_source']!r}")
             raise ValueError(f"Invalid depth_source: {cfg['depth_source']}")

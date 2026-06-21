@@ -75,6 +75,19 @@ def generate_launch_description() -> LaunchDescription:
         default_value="0",
         description="FPS limit. Set 0 to use platform default.",
     )
+    model_name_arg = DeclareLaunchArgument(
+        "model_name",
+        default_value="SimpleFruitsYoloV8.rvc2.tar.xz",
+        description=(
+            "Model file name inside depthai_models/ (.yaml or .tar.xz). "
+            "Use model_path for an explicit custom file path; model_path overrides model_name when set."
+        ),
+    )
+    model_path_arg = DeclareLaunchArgument(
+        "model_path",
+        default_value="",
+        description="Optional custom model file path (.yaml or .tar.xz). Overrides model_name when set.",
+    )
     image_topic_arg = DeclareLaunchArgument(
         "image_topic",
         default_value="/kalman_tracking/image",
@@ -133,6 +146,8 @@ def generate_launch_description() -> LaunchDescription:
             {
                 "device": LaunchConfiguration("device"),
                 "fps_limit": LaunchConfiguration("fps_limit"),
+                "model_name": LaunchConfiguration("model_name"),
+                "model_path": LaunchConfiguration("model_path"),
                 "image_topic": LaunchConfiguration("image_topic"),
                 "tracklets_topic": LaunchConfiguration("tracklets_topic"),
                 "frame_id": LaunchConfiguration("frame_id"),
@@ -200,6 +215,8 @@ def generate_launch_description() -> LaunchDescription:
             cam_yaw_arg,
             device_arg,
             fps_limit_arg,
+            model_name_arg,
+            model_path_arg,
             image_topic_arg,
             tracklets_topic_arg,
             markers_topic_arg,

@@ -18,6 +18,8 @@ class KalmanTrackingNode(Node):
 
         self.declare_parameter("device", "")
         self.declare_parameter("fps_limit", 0)
+        self.declare_parameter("model_name", "SimpleFruitsYoloV8.rvc2.tar.xz")
+        self.declare_parameter("model_path", "")
         self.declare_parameter("image_topic", "/kalman_tracking/image")
         self.declare_parameter("tracklets_topic", "/kalman_tracking/tracklets")
         self.declare_parameter("frame_id", "oak_rgb_camera_optical_frame")
@@ -91,6 +93,24 @@ class KalmanTrackingNode(Node):
             f"Could not find model YAML for platform {platform}: {model_name}"
         )
 
+    def _model_archive_path(self, archive_name: str) -> Path:
+        source_path = Path(__file__).resolve().parent / "depthai_models" / archive_name
+        if source_path.exists():
+            return source_path
+
+        from ament_index_python.packages import get_package_share_directory
+
+        share_path = (
+            Path(get_package_share_directory("my_depthai_object_tracking"))
+            / "kalman_tracking"
+            / "depthai_models"
+            / archive_name
+        )
+        if share_path.exists():
+            return share_path
+
+        raise FileNotFoundError(f"Could not find model archive: {archive_name}")
+
     def _ensure_pipeline_running(self) -> None:
         if self._pipeline is not None:
             return
@@ -113,6 +133,8 @@ class KalmanTrackingNode(Node):
     def _start_pipeline(self) -> None:
         device_name = str(self.get_parameter("device").value).strip()
         fps_limit = int(self.get_parameter("fps_limit").value)
+        model_name = str(self.get_parameter("model_name").value).strip()
+        model_path_param = str(self.get_parameter("model_path").value).strip()
         fps_value = fps_limit if fps_limit > 0 else None
 
         self._device = (
@@ -133,15 +155,53 @@ class KalmanTrackingNode(Node):
                 "run this node."
             )
 
-        model_path = self._model_path_for_platform(platform)
         self._pipeline = dai.Pipeline(self._device)
         pipeline = self._pipeline
 
-        model_description = dai.NNModelDescription.fromYamlFile(str(model_path))
-        nn_archive = dai.NNArchive(dai.getModelFromZoo(model_description))
+        if model_path_param:
+            model_path = Path(model_path_param).expanduser()
+            if not model_path.is_absolute():
+                model_path = Path.cwd() / model_path
+            if not model_path.exists():
+                raise FileNotFoundError(f"Custom model_path does not exist: {model_path}")
+
+            if model_path.suffix.lower() == ".yaml":
+                model_description = dai.NNModelDescription.fromYamlFile(str(model_path))
+                nn_archive = dai.NNArchive(dai.getModelFromZoo(model_description))
+            elif str(model_path).lower().endswith(".tar.xz"):
+                nn_archive = dai.NNArchive(str(model_path))
+            else:
+                raise ValueError(
+                    "Unsupported model_path format. Use a model-zoo YAML (.yaml) "
+                    "or NN archive (.tar.xz)."
+                )
+            self.get_logger().info(f"Using custom model_path: {model_path}")
+        elif model_name:
+            preset_path = self._model_archive_path(model_name)
+            if preset_path.suffix.lower() == ".yaml":
+                model_description = dai.NNModelDescription.fromYamlFile(str(preset_path))
+                nn_archive = dai.NNArchive(dai.getModelFromZoo(model_description))
+            elif str(preset_path).lower().endswith(".tar.xz"):
+                nn_archive = dai.NNArchive(str(preset_path))
+            else:
+                raise ValueError(f"Unsupported preset model format: {preset_path}")
+            self.get_logger().info(f"Using preset model file: {preset_path}")
+        else:
+            raise ValueError(
+                f"Unsupported model_name {model_name!r}. "
+                "Set model_name to a file present in depthai_models/ (.yaml or .tar.xz), "
+                "or set model_path to an explicit file path."
+            )
+
         labels = nn_archive.getConfig().model.heads[0].metadata.classes
         self._labels = labels
-        person_label = labels.index("person")
+        if "person" in labels:
+            detection_labels_to_track = [labels.index("person")]
+        else:
+            detection_labels_to_track = list(range(len(labels)))
+            self.get_logger().warn(
+                "Selected model has no 'person' class; tracking all classes instead."
+            )
 
         cam = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A)
         left_cam = pipeline.create(dai.node.Camera).build(
@@ -171,7 +231,7 @@ class KalmanTrackingNode(Node):
             nn.setNNArchive(nn_archive, numShaves=6)
 
         object_tracker = pipeline.create(dai.node.ObjectTracker)
-        object_tracker.setDetectionLabelsToTrack([person_label])
+        object_tracker.setDetectionLabelsToTrack(detection_labels_to_track)
         if platform == "RVC2":
             object_tracker.setTrackerType(dai.TrackerType.ZERO_TERM_COLOR_HISTOGRAM)
         else:

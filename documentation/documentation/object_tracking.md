@@ -15,7 +15,7 @@ De package `my_depthai_object_tracking` is een ROS 2 package voor DepthAI-gebase
 
 - `my_depthai_object_tracking/kalman_tracking/kalman_tracking_node.py` - hoofdnode voor tracking
 - `my_depthai_object_tracking/kalman_tracking/kalman_tracking_markers_node.py` - markernode
-- `my_depthai_object_tracking/kalman_tracking/depthai_models/` - model YAML-bestanden
+- `my_depthai_object_tracking/kalman_tracking/depthai_models/` - modelbestanden (`.yaml` en `.tar.xz`)
 - `launch/kalman_tracking.launch.py` - geïntegreerde launchfile
 - `rviz/kalman_tracking.rviz` - RViz preset
 
@@ -54,6 +54,8 @@ ros2 run my_depthai_object_tracking kalman_tracking_markers_node
 
 - `device` - optionele OAK device id/naam/IP
 - `fps_limit` - runtime FPS-limiet (`0` gebruikt platform-default)
+- `model_name` - preset model-bestandsnaam (bijvoorbeeld `yolov6_nano_r2_coco.RVC2.yaml` of `SimpleFruitsYoloV8.rvc2.tar.xz`)
+- `model_path` - optioneel pad naar custom modelbestand (`.yaml` of `.tar.xz`), overschrijft `model_name` als gezet
 - `image_topic` - output topic voor beeld
 - `tracklets_topic` - output topic voor tracklets
 - `markers_topic` - output topic voor markers
@@ -72,9 +74,17 @@ ros2 launch my_depthai_object_tracking kalman_tracking.launch.py \
   start_rviz:=true \
   start_markers:=true \
   start_urdf:=true \
+  model_name:=SimpleFruitsYoloV8.rvc2.tar.xz \
   image_topic:=/demo/kalman/image \
   tracklets_topic:=/demo/kalman/tracklets \
   markers_topic:=/demo/kalman/markers
+```
+
+Gebruik een custom modelbestand:
+
+```bash
+ros2 launch my_depthai_object_tracking kalman_tracking.launch.py \
+  model_path:=/absoluut/pad/naar/je/model.rvc2.tar.xz
 ```
 
 ## Parameters van de markernode
